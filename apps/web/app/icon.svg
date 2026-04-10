@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Spanish flag background (rounded square) -->
+  <rect width="512" height="512" rx="96" fill="#c60b1e"/>
+  <!-- Yellow band -->
+  <rect y="128" width="512" height="256" fill="#ffc400"/>
+  <!-- Top red band (re-apply with rounded corners) -->
+  <clipPath id="outer">
+    <rect width="512" height="512" rx="96"/>
+  </clipPath>
+  <g clip-path="url(#outer)">
+    <rect y="0" width="512" height="128" fill="#c60b1e"/>
+    <rect y="128" width="512" height="256" fill="#ffc400"/>
+    <rect y="384" width="512" height="128" fill="#c60b1e"/>
+  </g>
+  <!-- AI text centered on yellow band -->
+  <text x="256" y="310" font-family="system-ui, -apple-system, sans-serif" font-size="200" font-weight="900" fill="#1a1a2e" text-anchor="middle" letter-spacing="-8">AI</text>
+  <!-- Subtle circuit/neural dot accents -->
+  <circle cx="130" cy="220" r="8" fill="#1a1a2e" opacity="0.3"/>
+  <circle cx="382" cy="220" r="8" fill="#1a1a2e" opacity="0.3"/>
+  <circle cx="130" cy="340" r="8" fill="#1a1a2e" opacity="0.3"/>
+  <circle cx="382" cy="340" r="8" fill="#1a1a2e" opacity="0.3"/>
+  <line x1="130" y1="220" x2="175" y2="250" stroke="#1a1a2e" stroke-width="3" opacity="0.2"/>
+  <line x1="382" y1="220" x2="337" y2="250" stroke="#1a1a2e" stroke-width="3" opacity="0.2"/>
+  <line x1="130" y1="340" x2="175" y2="310" stroke="#1a1a2e" stroke-width="3" opacity="0.2"/>
+  <line x1="382" y1="340" x2="337" y2="310" stroke="#1a1a2e" stroke-width="3" opacity="0.2"/>
+</svg>

@@ -1,0 +1,24 @@
+{
+  "name": "@espanaia/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.mjs --external:pg-native --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "start": "node dist/server.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@espanaia/official-connectors": "file:../../packages/official-connectors",
+    "@espanaia/seed-data": "file:../../packages/seed-data",
+    "@espanaia/shared-types": "file:../../packages/shared-types",
+    "@fastify/cors": "^11.1.0",
+    "fastify": "^5.6.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.3",
+    "tsx": "^4.20.6"
+  }
+}

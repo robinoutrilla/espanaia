@@ -1,0 +1,42 @@
+{
+  "name": "@espanaia/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Desktop macOS shell for EspanaIA political intelligence platform",
+  "author": "Robin + Codex",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "npm run build && electron dist/main.js",
+    "icon": "node ../../scripts/build-desktop-icon.mjs",
+    "package": "npm run icon && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dir",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "electron": "40.2.1",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "com.espanaia.desktop",
+    "productName": "EspañaIA",
+    "files": [
+      "dist/**/*",
+      "runtime/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "asar": false,
+    "mac": {
+      "category": "public.app-category.news",
+      "darkModeSupport": true,
+      "icon": "assets/espanaia.icns",
+      "target": [
+        "dir"
+      ]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+coverage
+.DS_Store
+npm-debug.log*
+.env*
+dist
+release
+*.tsbuildinfo
+apps/desktop/runtime
+apps/mirofish

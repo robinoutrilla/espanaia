@@ -1,0 +1,577 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Voting records — plenary & commission votes from Congreso and Senado.
+   Based on Congreso opendata API and Senado XML feeds (seed 2026).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+export type VoteOption = "si" | "no" | "abstencion" | "ausente";
+export type ChamberType = "congreso" | "senado";
+
+export interface PartyVoteBreakdown {
+  partySlug: string;
+  si: number;
+  no: number;
+  abstencion: number;
+  ausente: number;
+  total: number;
+  position: VoteOption; // majority position
+}
+
+export interface PlenaryVote {
+  id: string;
+  chamber: ChamberType;
+  sessionDate: string;
+  title: string;
+  summary: string;
+  category: "ley-organica" | "ley-ordinaria" | "decreto-ley" | "proposicion-no-de-ley" | "mocion" | "veto" | "enmienda" | "otro";
+  result: "aprobado" | "rechazado";
+  si: number;
+  no: number;
+  abstencion: number;
+  ausente: number;
+  totalVotes: number;
+  partyBreakdown: PartyVoteBreakdown[];
+  initiativeRef?: string; // dossier number link
+  sourceUrl: string;
+  territorySlugs: string[];
+  tags: string[];
+}
+
+export interface DeputyVoteRecord {
+  politicianSlug: string;
+  voteId: string;
+  vote: VoteOption;
+}
+
+export interface PartyDiscipline {
+  partySlug: string;
+  chamber: ChamberType;
+  totalVotes: number;
+  disciplineRate: number; // % voting with party majority
+  rebellions: number;
+  absenceRate: number;
+}
+
+export const categoryLabels: Record<string, string> = {
+  "ley-organica": "Ley Orgánica",
+  "ley-ordinaria": "Ley Ordinaria",
+  "decreto-ley": "Real Decreto-ley",
+  "proposicion-no-de-ley": "Proposición no de Ley",
+  mocion: "Moción",
+  veto: "Veto",
+  enmienda: "Enmienda",
+  otro: "Otro",
+};
+
+export const categoryColors: Record<string, string> = {
+  "ley-organica": "#c8102e",
+  "ley-ordinaria": "#003da5",
+  "decreto-ley": "#f1bf00",
+  "proposicion-no-de-ley": "#009b3a",
+  mocion: "#6b4c9a",
+  veto: "#8e8e9a",
+  enmienda: "#e87d00",
+  otro: "#555566",
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PLENARY VOTES — XV Legislatura (2023–)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export const plenaryVotes: PlenaryVote[] = [
+  {
+    id: "vote-001",
+    chamber: "congreso",
+    sessionDate: "2026-04-03",
+    title: "Ley Orgánica de paridad en la representación política",
+    summary: "Establece cuotas mínimas del 50% de mujeres en listas electorales y órganos constitucionales.",
+    category: "ley-organica",
+    result: "aprobado",
+    si: 187,
+    no: 144,
+    abstencion: 12,
+    ausente: 7,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 120, no: 0, abstencion: 0, ausente: 1, total: 121, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "pp", si: 0, no: 134, abstencion: 2, ausente: 4, total: 140, position: "no" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "junts", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+    ],
+    initiativeRef: "121/000042",
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["igualdad", "paridad", "representación"],
+  },
+  {
+    id: "vote-002",
+    chamber: "congreso",
+    sessionDate: "2026-03-27",
+    title: "Real Decreto-ley de medidas urgentes para la vivienda",
+    summary: "Ampliación del bono alquiler joven, limitación de precios en zonas tensionadas y movilización de vivienda pública vacía.",
+    category: "decreto-ley",
+    result: "aprobado",
+    si: 178,
+    no: 152,
+    abstencion: 14,
+    ausente: 6,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 120, no: 0, abstencion: 0, ausente: 1, total: 121, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "pp", si: 0, no: 136, abstencion: 0, ausente: 4, total: 140, position: "no" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "pnv", si: 0, no: 0, abstencion: 5, ausente: 0, total: 5, position: "abstencion" },
+      { partySlug: "coalicion-canaria", si: 0, no: 0, abstencion: 1, ausente: 0, total: 1, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana", "madrid", "cataluna", "comunitat-valenciana"],
+    tags: ["vivienda", "alquiler", "urbanismo"],
+  },
+  {
+    id: "vote-003",
+    chamber: "congreso",
+    sessionDate: "2026-03-20",
+    title: "Convalidación del Real Decreto-ley de eficiencia energética",
+    summary: "Medidas de ahorro energético en edificios públicos, certificación obligatoria y renovables en autoconsumo.",
+    category: "decreto-ley",
+    result: "aprobado",
+    si: 198,
+    no: 120,
+    abstencion: 26,
+    ausente: 6,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 120, no: 0, abstencion: 0, ausente: 1, total: 121, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "junts", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "pp", si: 14, no: 100, abstencion: 22, ausente: 4, total: 140, position: "no" },
+      { partySlug: "vox", si: 0, no: 30, abstencion: 2, ausente: 1, total: 33, position: "no" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["energía", "eficiencia", "clima"],
+  },
+  {
+    id: "vote-004",
+    chamber: "congreso",
+    sessionDate: "2026-03-13",
+    title: "Proposición de Ley de protección del menor en entornos digitales",
+    summary: "Regulación del acceso de menores a redes sociales, obligaciones de verificación de edad y filtrado de contenidos.",
+    category: "ley-ordinaria",
+    result: "aprobado",
+    si: 312,
+    no: 0,
+    abstencion: 28,
+    ausente: 10,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 119, no: 0, abstencion: 0, ausente: 2, total: 121, position: "si" },
+      { partySlug: "pp", si: 136, no: 0, abstencion: 0, ausente: 4, total: 140, position: "si" },
+      { partySlug: "vox", si: 31, no: 0, abstencion: 0, ausente: 2, total: 33, position: "si" },
+      { partySlug: "sumar", si: 29, no: 0, abstencion: 2, ausente: 0, total: 31, position: "si" },
+      { partySlug: "erc", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "eh-bildu", si: 0, no: 0, abstencion: 6, ausente: 0, total: 6, position: "abstencion" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "podemos", si: 0, no: 0, abstencion: 5, ausente: 0, total: 5, position: "abstencion" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["menores", "digital", "privacidad"],
+  },
+  {
+    id: "vote-005",
+    chamber: "congreso",
+    sessionDate: "2026-02-27",
+    title: "Moción sobre la crisis de la vivienda",
+    summary: "Debate sobre intervención pública en el mercado inmobiliario: topes al alquiler, parque público y fiscalidad de la vivienda vacía.",
+    category: "mocion",
+    result: "rechazado",
+    si: 162,
+    no: 172,
+    abstencion: 10,
+    ausente: 6,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "pp", si: 0, no: 0, abstencion: 0, ausente: 4, total: 140, position: "no" },
+      { partySlug: "psoe", si: 0, no: 118, abstencion: 0, ausente: 3, total: 121, position: "no" },
+      { partySlug: "vox", si: 33, no: 0, abstencion: 0, ausente: 0, total: 33, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "junts", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 0, no: 0, abstencion: 5, ausente: 0, total: 5, position: "abstencion" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 0, no: 0, abstencion: 1, ausente: 0, total: 1, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana", "madrid", "cataluna", "comunitat-valenciana", "illes-balears"],
+    tags: ["vivienda", "alquiler", "moción"],
+  },
+  {
+    id: "vote-006",
+    chamber: "congreso",
+    sessionDate: "2026-02-20",
+    title: "Ley de inteligencia artificial y derechos digitales",
+    summary: "Marco regulatorio nacional para IA: registro de algoritmos públicos, evaluación de impacto y derechos de los ciudadanos.",
+    category: "ley-ordinaria",
+    result: "aprobado",
+    si: 289,
+    no: 33,
+    abstencion: 18,
+    ausente: 10,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 119, no: 0, abstencion: 0, ausente: 2, total: 121, position: "si" },
+      { partySlug: "pp", si: 132, no: 0, abstencion: 4, ausente: 4, total: 140, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "vox", si: 0, no: 31, abstencion: 0, ausente: 2, total: 33, position: "no" },
+      { partySlug: "erc", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["inteligencia artificial", "digital", "derechos"],
+  },
+  {
+    id: "vote-007",
+    chamber: "senado",
+    sessionDate: "2026-03-26",
+    title: "Veto a la Ley de amnistía — propuesta del Grupo Popular",
+    summary: "El Senado debate el veto del PP a la Ley de Amnistía. Mayoría absoluta del PP en el Senado.",
+    category: "veto",
+    result: "aprobado",
+    si: 155,
+    no: 98,
+    abstencion: 8,
+    ausente: 5,
+    totalVotes: 266,
+    partyBreakdown: [
+      { partySlug: "pp", si: 148, no: 0, abstencion: 0, ausente: 4, total: 152, position: "si" },
+      { partySlug: "vox", si: 18, no: 0, abstencion: 0, ausente: 0, total: 18, position: "si" },
+      { partySlug: "psoe", si: 0, no: 88, abstencion: 0, ausente: 2, total: 90, position: "no" },
+      { partySlug: "erc", si: 0, no: 4, abstencion: 0, ausente: 0, total: 4, position: "no" },
+      { partySlug: "pnv", si: 0, no: 0, abstencion: 6, ausente: 0, total: 6, position: "abstencion" },
+      { partySlug: "eh-bildu", si: 0, no: 4, abstencion: 0, ausente: 0, total: 4, position: "no" },
+    ],
+    sourceUrl: "https://www.senado.es",
+    territorySlugs: ["espana", "cataluna"],
+    tags: ["amnistía", "veto", "senado"],
+  },
+  {
+    id: "vote-008",
+    chamber: "congreso",
+    sessionDate: "2026-02-06",
+    title: "Real Decreto-ley de medidas urgentes contra la sequía",
+    summary: "Plan hidrológico de emergencia: desaladoras, reutilización de aguas, restricciones de riego y trasvases de urgencia.",
+    category: "decreto-ley",
+    result: "aprobado",
+    si: 296,
+    no: 33,
+    abstencion: 14,
+    ausente: 7,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 119, no: 0, abstencion: 0, ausente: 2, total: 121, position: "si" },
+      { partySlug: "pp", si: 134, no: 0, abstencion: 2, ausente: 4, total: 140, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "erc", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 5, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana", "andalucia", "murcia", "comunitat-valenciana", "cataluna"],
+    tags: ["sequía", "agua", "emergencia"],
+  },
+  {
+    id: "vote-009",
+    chamber: "congreso",
+    sessionDate: "2026-01-30",
+    title: "Enmiendas a los Presupuestos Generales del Estado 2026",
+    summary: "Votación de enmiendas parciales al proyecto de PGE: sanidad, pensiones, educación e infraestructuras.",
+    category: "enmienda",
+    result: "rechazado",
+    si: 165,
+    no: 175,
+    abstencion: 4,
+    ausente: 6,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "pp", si: 136, no: 0, abstencion: 0, ausente: 4, total: 140, position: "si" },
+      { partySlug: "vox", si: 33, no: 0, abstencion: 0, ausente: 0, total: 33, position: "si" },
+      { partySlug: "psoe", si: 0, no: 119, abstencion: 0, ausente: 2, total: 121, position: "no" },
+      { partySlug: "sumar", si: 0, no: 31, abstencion: 0, ausente: 0, total: 31, position: "no" },
+      { partySlug: "erc", si: 0, no: 7, abstencion: 0, ausente: 0, total: 7, position: "no" },
+      { partySlug: "eh-bildu", si: 0, no: 6, abstencion: 0, ausente: 0, total: 6, position: "no" },
+      { partySlug: "pnv", si: 0, no: 5, abstencion: 0, ausente: 0, total: 5, position: "no" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 4, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "podemos", si: 0, no: 5, abstencion: 0, ausente: 0, total: 5, position: "no" },
+      { partySlug: "bng", si: 0, no: 1, abstencion: 0, ausente: 0, total: 1, position: "no" },
+      { partySlug: "coalicion-canaria", si: 0, no: 1, abstencion: 0, ausente: 0, total: 1, position: "no" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["presupuestos", "PGE", "enmiendas"],
+  },
+  {
+    id: "vote-010",
+    chamber: "congreso",
+    sessionDate: "2026-01-16",
+    title: "Ley de Familias",
+    summary: "Reconocimiento de modelos familiares diversos, permisos parentales ampliados y protección de familias monoparentales.",
+    category: "ley-ordinaria",
+    result: "aprobado",
+    si: 184,
+    no: 140,
+    abstencion: 18,
+    ausente: 8,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 119, no: 0, abstencion: 0, ausente: 2, total: 121, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "pp", si: 0, no: 130, abstencion: 6, ausente: 4, total: 140, position: "no" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "coalicion-canaria", si: 0, no: 0, abstencion: 1, ausente: 0, total: 1, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["familias", "igualdad", "permisos"],
+  },
+  // ── April 2026 — new votes ──────────────────────────────────────────
+  {
+    id: "vote-011",
+    chamber: "congreso",
+    sessionDate: "2026-04-09",
+    title: "PNL sobre reforma de la financiación autonómica",
+    summary: "Proposición no de ley instando al Gobierno a presentar un nuevo modelo de financiación autonómica antes de fin de 2026.",
+    category: "proposicion-no-de-ley",
+    result: "aprobado",
+    si: 179,
+    no: 163,
+    abstencion: 8,
+    ausente: 0,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 120, no: 0, abstencion: 0, ausente: 1, total: 121, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "pp", si: 0, no: 136, abstencion: 0, ausente: 4, total: 140, position: "no" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+      { partySlug: "coalicion-canaria", si: 0, no: 0, abstencion: 1, ausente: 0, total: 1, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana", "cataluna", "comunitat-valenciana", "andalucia"],
+    tags: ["financiación autonómica", "modelo territorial", "CCAA"],
+  },
+  {
+    id: "vote-012",
+    chamber: "congreso",
+    sessionDate: "2026-04-09",
+    title: "PNL sobre plan de empleo juvenil europeo",
+    summary: "Instando al Gobierno a impulsar un plan de empleo juvenil coordinado con la Garantía Juvenil europea y los fondos del FSE+.",
+    category: "proposicion-no-de-ley",
+    result: "aprobado",
+    si: 295,
+    no: 33,
+    abstencion: 22,
+    ausente: 0,
+    totalVotes: 350,
+    partyBreakdown: [
+      { partySlug: "psoe", si: 120, no: 0, abstencion: 0, ausente: 1, total: 121, position: "si" },
+      { partySlug: "pp", si: 132, no: 0, abstencion: 4, ausente: 4, total: 140, position: "si" },
+      { partySlug: "sumar", si: 31, no: 0, abstencion: 0, ausente: 0, total: 31, position: "si" },
+      { partySlug: "erc", si: 7, no: 0, abstencion: 0, ausente: 0, total: 7, position: "si" },
+      { partySlug: "eh-bildu", si: 6, no: 0, abstencion: 0, ausente: 0, total: 6, position: "si" },
+      { partySlug: "pnv", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "podemos", si: 5, no: 0, abstencion: 0, ausente: 0, total: 5, position: "si" },
+      { partySlug: "bng", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "coalicion-canaria", si: 1, no: 0, abstencion: 0, ausente: 0, total: 1, position: "si" },
+      { partySlug: "vox", si: 0, no: 33, abstencion: 0, ausente: 0, total: 33, position: "no" },
+      { partySlug: "junts", si: 0, no: 0, abstencion: 7, ausente: 0, total: 7, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.congreso.es/opendata",
+    territorySlugs: ["espana"],
+    tags: ["empleo juvenil", "Garantía Juvenil", "FSE+", "Europa"],
+  },
+  {
+    id: "vote-013",
+    chamber: "senado",
+    sessionDate: "2026-04-10",
+    title: "Moción sobre reforma de la financiación autonómica",
+    summary: "Moción del GP Popular exigiendo reforma inmediata de la financiación autonómica. Rechazada por mayoría progresista en el Senado.",
+    category: "mocion",
+    result: "rechazado",
+    si: 148,
+    no: 102,
+    abstencion: 16,
+    ausente: 0,
+    totalVotes: 266,
+    partyBreakdown: [
+      { partySlug: "pp", si: 148, no: 0, abstencion: 0, ausente: 4, total: 152, position: "si" },
+      { partySlug: "psoe", si: 0, no: 86, abstencion: 0, ausente: 4, total: 90, position: "no" },
+      { partySlug: "erc", si: 0, no: 4, abstencion: 0, ausente: 0, total: 4, position: "no" },
+      { partySlug: "eh-bildu", si: 0, no: 4, abstencion: 0, ausente: 0, total: 4, position: "no" },
+      { partySlug: "pnv", si: 0, no: 0, abstencion: 6, ausente: 0, total: 6, position: "abstencion" },
+      { partySlug: "vox", si: 0, no: 0, abstencion: 10, ausente: 8, total: 18, position: "abstencion" },
+    ],
+    sourceUrl: "https://www.senado.es",
+    territorySlugs: ["espana", "cataluna", "comunitat-valenciana", "andalucia"],
+    tags: ["financiación autonómica", "modelo territorial", "senado"],
+  },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INDIVIDUAL DEPUTY VOTES — sample records for featured politicians
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export const deputyVoteRecords: DeputyVoteRecord[] = [
+  { politicianSlug: "pedro-sanchez", voteId: "vote-001", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-002", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-003", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-004", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-006", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-008", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-010", vote: "si" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-001", vote: "no" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-002", vote: "no" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-003", vote: "no" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-005", vote: "si" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-006", vote: "no" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-008", vote: "no" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-001", vote: "si" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-002", vote: "si" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-004", vote: "abstencion" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-006", vote: "abstencion" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-008", vote: "abstencion" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-001", vote: "no" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-002", vote: "no" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-004", vote: "si" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-006", vote: "si" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-008", vote: "si" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-009", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-001", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-002", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-003", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-005", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-006", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-010", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-001", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-002", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-003", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-006", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-008", vote: "si" },
+  // ── April 2026 votes ──
+  { politicianSlug: "pedro-sanchez", voteId: "vote-011", vote: "si" },
+  { politicianSlug: "pedro-sanchez", voteId: "vote-012", vote: "si" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-011", vote: "no" },
+  { politicianSlug: "santiago-abascal", voteId: "vote-012", vote: "no" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-011", vote: "si" },
+  { politicianSlug: "gabriel-rufian", voteId: "vote-012", vote: "si" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-011", vote: "no" },
+  { politicianSlug: "miguel-tellado", voteId: "vote-012", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-011", vote: "si" },
+  { politicianSlug: "yolanda-diaz", voteId: "vote-012", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-011", vote: "si" },
+  { politicianSlug: "mertxe-aizpurua", voteId: "vote-012", vote: "si" },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PARTY DISCIPLINE — aggregated stats
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export const partyDisciplineStats: PartyDiscipline[] = [
+  { partySlug: "psoe", chamber: "congreso", totalVotes: 145, disciplineRate: 99.2, rebellions: 1, absenceRate: 1.4 },
+  { partySlug: "pp", chamber: "congreso", totalVotes: 145, disciplineRate: 97.8, rebellions: 4, absenceRate: 2.8 },
+  { partySlug: "vox", chamber: "congreso", totalVotes: 145, disciplineRate: 99.8, rebellions: 0, absenceRate: 0.6 },
+  { partySlug: "sumar", chamber: "congreso", totalVotes: 145, disciplineRate: 98.4, rebellions: 2, absenceRate: 0.4 },
+  { partySlug: "erc", chamber: "congreso", totalVotes: 145, disciplineRate: 100.0, rebellions: 0, absenceRate: 0.0 },
+  { partySlug: "junts", chamber: "congreso", totalVotes: 145, disciplineRate: 100.0, rebellions: 0, absenceRate: 0.0 },
+  { partySlug: "eh-bildu", chamber: "congreso", totalVotes: 145, disciplineRate: 100.0, rebellions: 0, absenceRate: 0.0 },
+  { partySlug: "pnv", chamber: "congreso", totalVotes: 145, disciplineRate: 100.0, rebellions: 0, absenceRate: 0.0 },
+  { partySlug: "podemos", chamber: "congreso", totalVotes: 145, disciplineRate: 100.0, rebellions: 0, absenceRate: 0.0 },
+  { partySlug: "pp", chamber: "senado", totalVotes: 86, disciplineRate: 98.6, rebellions: 2, absenceRate: 2.4 },
+  { partySlug: "psoe", chamber: "senado", totalVotes: 86, disciplineRate: 99.4, rebellions: 1, absenceRate: 1.8 },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QUERY FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export function getVotesForParty(partySlug: string): PlenaryVote[] {
+  return plenaryVotes.filter((v) =>
+    v.partyBreakdown.some((pb) => pb.partySlug === partySlug)
+  );
+}
+
+export function getVotesForTerritory(territorySlug: string): PlenaryVote[] {
+  return plenaryVotes.filter((v) => v.territorySlugs.includes(territorySlug));
+}
+
+export function getDeputyVotes(politicianSlug: string) {
+  const records = deputyVoteRecords.filter((r) => r.politicianSlug === politicianSlug);
+  return records.map((r) => ({
+    ...r,
+    vote_detail: plenaryVotes.find((v) => v.id === r.voteId),
+  }));
+}
+
+export function getPartyDiscipline(partySlug: string, chamber?: ChamberType): PartyDiscipline[] {
+  return partyDisciplineStats.filter(
+    (d) => d.partySlug === partySlug && (!chamber || d.chamber === chamber)
+  );
+}
+
+export function getPartyPositionSummary(partySlug: string) {
+  let si = 0, no = 0, abstencion = 0;
+  for (const vote of plenaryVotes) {
+    const pb = vote.partyBreakdown.find((p) => p.partySlug === partySlug);
+    if (pb) {
+      if (pb.position === "si") si++;
+      else if (pb.position === "no") no++;
+      else abstencion++;
+    }
+  }
+  return { si, no, abstencion, total: si + no + abstencion };
+}
