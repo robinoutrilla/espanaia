@@ -1,0 +1,9 @@
+node_modules
+apps/desktop
+apps/macos-native
+apps/mirofish
+apps/api
+.next
+release
+*.app
+*.icns
