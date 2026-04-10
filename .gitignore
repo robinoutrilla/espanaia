@@ -9,4 +9,7 @@ dist
 release
 *.tsbuildinfo
 apps/desktop/runtime
+apps/macos-native/build
+apps/macos-native/release
 apps/mirofish
+.vercel
