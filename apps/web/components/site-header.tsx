@@ -189,14 +189,72 @@ function NavDropdown({
   );
 }
 
+function MobileNavGroup({
+  label,
+  items,
+  currentSection,
+  t,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  currentSection: string;
+  t: Translations;
+  onNavigate: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const itemLabel = (item: NavItem) => item.label ?? (item.key ? t.nav[item.key] : "");
+
+  return (
+    <div className="mobile-nav-group">
+      <button className="mobile-nav-group-trigger" onClick={() => setOpen(!open)}>
+        <span>{label}</span>
+        <svg className={`mobile-nav-chevron ${open ? "mobile-nav-chevron-open" : ""}`} width="12" height="12" viewBox="0 0 10 10" fill="none">
+          <path d="M2.5 3.75L5 6.25L7.5 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="mobile-nav-group-items">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              className={`mobile-nav-link ${currentSection === item.section ? "mobile-nav-link-active" : ""}`}
+              href={item.href}
+              onClick={onNavigate}
+            >
+              {itemLabel(item)}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SiteHeader({ currentSection = "home" }: SiteHeaderProps) {
   const { t } = useLang();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    function onResize() { if (window.innerWidth > 768) setMobileOpen(false); }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  const closeMobile = () => setMobileOpen(false);
 
   return (
     <header className="panel site-header">
       {/* Top bar: brand text + meta */}
       <div className="header-top">
-        <Link className="brand-block" href="/">
+        <Link className="brand-block" href="/" onClick={closeMobile}>
           <div className="brand-name">
             <span className="brand-name-main">Inteligencia Abierta para Espa{"ñ"}a</span>
             <span className="brand-name-sub">Plataforma de inteligencia pol{"í"}tica</span>
@@ -206,11 +264,22 @@ export function SiteHeader({ currentSection = "home" }: SiteHeaderProps) {
         <div className="site-meta">
           <LangSelector />
           <span className="tag tag-bright">{t.common.live}</span>
+          {/* Hamburger — mobile only */}
+          <button
+            className="mobile-hamburger"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={mobileOpen}
+          >
+            <span className={`hamburger-line ${mobileOpen ? "hamburger-open" : ""}`} />
+            <span className={`hamburger-line ${mobileOpen ? "hamburger-open" : ""}`} />
+            <span className={`hamburger-line ${mobileOpen ? "hamburger-open" : ""}`} />
+          </button>
         </div>
       </div>
 
-      {/* Yellow nav bar — menu-categorias style */}
-      <nav className="site-nav" aria-label={t.common.nationalNav}>
+      {/* Desktop: Yellow nav bar */}
+      <nav className="site-nav site-nav-desktop" aria-label={t.common.nationalNav}>
         <Link
           className={`nav-link-radar ${currentSection === "home" ? "nav-link-radar-active" : ""}`}
           href="/"
@@ -236,6 +305,45 @@ export function SiteHeader({ currentSection = "home" }: SiteHeaderProps) {
         <Link
           className={`nav-link-radar ${currentSection === "partido-iapn" ? "nav-link-radar-active" : ""}`}
           href="/partido-iapn"
+        >
+          Partido IAP{"Ñ"}
+        </Link>
+      </nav>
+
+      {/* Mobile: Full-screen drawer */}
+      {mobileOpen && (
+        <div className="mobile-nav-backdrop" onClick={closeMobile} />
+      )}
+      <nav className={`mobile-nav-drawer ${mobileOpen ? "mobile-nav-drawer-open" : ""}`} aria-label="Menú móvil">
+        <Link
+          className={`mobile-nav-link mobile-nav-link-top ${currentSection === "home" ? "mobile-nav-link-active" : ""}`}
+          href="/"
+          onClick={closeMobile}
+        >
+          {t.nav.radar}
+        </Link>
+        {navGroups.map((group) => (
+          <MobileNavGroup
+            key={group.groupKey}
+            label={group.label}
+            items={group.items}
+            currentSection={currentSection}
+            t={t}
+            onNavigate={closeMobile}
+          />
+        ))}
+        <div className="mobile-nav-divider" />
+        <Link
+          className={`mobile-nav-link mobile-nav-link-top ${currentSection === "periodico" ? "mobile-nav-link-active" : ""}`}
+          href="/periodico"
+          onClick={closeMobile}
+        >
+          Periódico
+        </Link>
+        <Link
+          className={`mobile-nav-link mobile-nav-link-top ${currentSection === "partido-iapn" ? "mobile-nav-link-active" : ""}`}
+          href="/partido-iapn"
+          onClick={closeMobile}
         >
           Partido IAP{"Ñ"}
         </Link>
