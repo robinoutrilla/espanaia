@@ -21,10 +21,14 @@ interface StoredItem {
   matches: { type: string; slug: string; name: string; href: string }[];
 }
 
-/** Ensure data directory exists */
+/** Ensure data directory exists (no-op on read-only filesystems like Vercel) */
 function ensureDir() {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!existsSync(DATA_DIR)) {
+      mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem (e.g. Vercel serverless) — skip
   }
 }
 
@@ -67,7 +71,12 @@ export function persistTrending(items: TrendingItem[]): number {
       })),
     };
 
-    appendFileSync(STORE_PATH, JSON.stringify(stored) + "\n");
+    try {
+      appendFileSync(STORE_PATH, JSON.stringify(stored) + "\n");
+    } catch {
+      // Read-only filesystem — skip persistence
+      break;
+    }
     existingLinks.add(item.link);
     added++;
   }

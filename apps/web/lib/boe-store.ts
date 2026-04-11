@@ -23,8 +23,12 @@ interface BackfillMeta {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function ensureDir() {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!existsSync(DATA_DIR)) {
+      mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem (e.g. Vercel serverless) — skip
   }
 }
 
@@ -47,8 +51,12 @@ function loadMeta(): BackfillMeta {
 }
 
 function saveMeta(meta: BackfillMeta) {
-  ensureDir();
-  writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
+  try {
+    ensureDir();
+    writeFileSync(META_PATH, JSON.stringify(meta, null, 2));
+  } catch {
+    // Read-only filesystem — skip persistence
+  }
 }
 
 function formatDate(d: Date): string {
@@ -84,7 +92,11 @@ export function persistBoeItems(items: OfficialBulletinItem[], boeDate: string):
   let added = 0;
   for (const item of items) {
     if (existingIds.has(item.id)) continue;
-    appendFileSync(STORE_PATH, JSON.stringify(item) + "\n");
+    try {
+      appendFileSync(STORE_PATH, JSON.stringify(item) + "\n");
+    } catch {
+      break; // Read-only filesystem
+    }
     existingIds.add(item.id);
     added++;
   }
