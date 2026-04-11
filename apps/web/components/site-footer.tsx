@@ -8,7 +8,7 @@ export function SiteFooter({ sources, extra }: SiteFooterProps) {
   return (
     <footer className="page-footer">
       <div>
-        <p className="page-footer-brand">IAP{"Ñ"}.com</p>
+        <p className="page-footer-brand">IA{"Ñ"}.com</p>
         <p className="page-footer-sub">Inteligencia Abierta para Espa{"ñ"}a</p>
         <p className="page-footer-copy">&copy; {year} IAN &middot; Datos abiertos &middot; Sin cookies de terceros</p>
       </div>
