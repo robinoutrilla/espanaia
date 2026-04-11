@@ -17,6 +17,7 @@ import { companyForms, businessProcedures, businessRegulations, businessStats202
 import { readArchive } from "./rss-store";
 import { searchBoeArchive } from "./boe-store";
 import { getIneSummarySync } from "./ine-live";
+import { getEurostatSummarySync } from "./eurostat-live";
 import {
   parties,
   politicians,
@@ -442,6 +443,18 @@ function searchPresupuestario(question: string): RAGResult {
       context.push(line);
     }
     if (ineLines.length > 0) sources.push("INE Live — Indicadores en tiempo real");
+  } catch {
+    // Non-blocking
+  }
+
+  // Live Eurostat indicators (from cache — populated by /api/eurostat)
+  try {
+    const euroLines = getEurostatSummarySync();
+    for (const line of euroLines) {
+      if (context.length >= MAX_CHUNKS_PER_AGENT * 3) break;
+      context.push(line);
+    }
+    if (euroLines.length > 0) sources.push("Eurostat — Datos macro UE en tiempo real");
   } catch {
     // Non-blocking
   }

@@ -7,6 +7,7 @@
 import { classifyIntent, runAgent, buildContext, AGENT_LABELS, type RAGResult } from "../../../lib/rag-agents";
 import { getTrending } from "../../../lib/rss-trending";
 import { getIneIndicators } from "../../../lib/ine-live";
+import { getEurostatSnapshot } from "../../../lib/eurostat-live";
 
 // ── LLM Configuration ──
 // Gemini 2.0 Flash — free tier: 15 RPM, 1M tokens/day
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
           }
           if (routedTo.includes("presupuestario")) {
             prefetches.push(getIneIndicators().catch(() => {}));
+            prefetches.push(getEurostatSnapshot().catch(() => {}));
           }
           if (prefetches.length > 0) {
             await Promise.all(prefetches);
