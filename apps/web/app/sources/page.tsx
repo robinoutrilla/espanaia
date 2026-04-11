@@ -211,6 +211,7 @@ export default function SourcesPage() {
                 <th className="local-th-name">Fuente</th>
                 <th className="local-th-num">RAG</th>
                 <th className="local-th-num">Estado</th>
+                <th className="local-th-name" style={{ minWidth: 240 }}>Motivo</th>
                 <th className="local-th-num">Docs</th>
                 <th className="local-th-num">Seed</th>
                 <th className="local-th-name" style={{ minWidth: 200 }}>
@@ -228,7 +229,7 @@ export default function SourcesPage() {
               return (
                 <tbody key={groupId}>
                   <tr className="local-ccaa-row">
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <div className="local-ccaa-row-inner">
                         {groupLabel} — {sources.length} fuente{sources.length > 1 ? "s" : ""}
                       </div>
@@ -287,6 +288,9 @@ export default function SourcesPage() {
                         >
                           {stateLabels[source.state]}
                         </span>
+                      </td>
+                      <td className="local-td-name" style={{ fontSize: "0.73rem", color: stateColors[source.state], maxWidth: "280px", lineHeight: 1.3 }}>
+                        {source.statusReason}
                       </td>
                       <td className="local-td-num" style={{ fontVariantNumeric: "tabular-nums" }}>
                         {source.docsCount > 0 ? (
