@@ -303,6 +303,162 @@ const impactResults: ImpactResult[] = [
       { name: "Iberdrola", type: "patronal", stance: "beneficiado", influence: 80, reason: "Líder renovable en España" },
     ],
   },
+  // ── Impact results para CCAAs adicionales ─────────────────────────────
+  {
+    id: "ir-009", scenarioId: "sim-001", territory: "Comunitat Valenciana", territorySlug: "comunitat-valenciana", impactLevel: "critico", impactScore: -68,
+    affectedPopulation: 5200000, budgetDelta: -2200, riskLevel: "muy-alto",
+    opportunities: ["Priorizar reconstrucción DANA con fondos propios"],
+    risks: ["Paralización reconstrucción post-DANA", "Pérdida de empleo en infraestructuras", "Retrasos en Corredor Mediterráneo"],
+    cascadeEffects: [
+      { order: 1, description: "Recorte fondos reconstrucción DANA", timeframe: "0-3 meses", probability: 90 },
+      { order: 2, description: "Tensión social en municipios afectados", timeframe: "3-6 meses", probability: 80 },
+    ],
+    actors: [
+      { name: "Generalitat Valenciana", type: "ccaa", stance: "perjudicado", influence: 80, reason: "Doble crisis: DANA + recorte NGEU" },
+      { name: "CEOE-Valencia", type: "patronal", stance: "perjudicado", influence: 55, reason: "Sector constructor paralizado" },
+    ],
+  },
+  {
+    id: "ir-010", scenarioId: "sim-001", territory: "Galicia", territorySlug: "galicia", impactLevel: "alto", impactScore: -48,
+    affectedPopulation: 2700000, budgetDelta: -950, riskLevel: "alto",
+    opportunities: ["Reorientar inversión hacia sector pesquero y naval"],
+    risks: ["Retraso en conectividad digital rural", "Impacto en programas contra despoblación"],
+    cascadeEffects: [
+      { order: 1, description: "Recalibrar Plan de digitalización rural", timeframe: "0-6 meses", probability: 85 },
+      { order: 2, description: "Presión sobre PGE para compensación", timeframe: "6-12 meses", probability: 65 },
+    ],
+    actors: [
+      { name: "Xunta de Galicia", type: "ccaa", stance: "perjudicado", influence: 75, reason: "Fondos comprometidos para despoblación" },
+    ],
+  },
+  {
+    id: "ir-011", scenarioId: "sim-003", territory: "Cataluña", territorySlug: "cataluna", impactLevel: "critico", impactScore: -50,
+    affectedPopulation: 7800000, budgetDelta: -220, riskLevel: "alto",
+    opportunities: ["Estabilización precios Barcelona", "Mayor acceso vivienda para jóvenes"],
+    risks: ["Fuga de inversores hacia Madrid", "Reducción oferta en Barcelona", "Alquileres de temporada como vía de escape"],
+    cascadeEffects: [
+      { order: 1, description: "Reducción del 15% de nuevos contratos en Barcelona", timeframe: "0-6 meses", probability: 75 },
+      { order: 2, description: "Aumento alquileres de temporada (fraude de ley)", timeframe: "6-12 meses", probability: 70 },
+    ],
+    actors: [
+      { name: "Generalitat de Catalunya", type: "ccaa", stance: "beneficiado", influence: 75, reason: "Aplica regulación de precios" },
+      { name: "Sindicat de Llogaters", type: "sindicato", stance: "beneficiado", influence: 40, reason: "Logro regulatorio" },
+    ],
+  },
+  {
+    id: "ir-012", scenarioId: "sim-002", territory: "Canarias", territorySlug: "canarias", impactLevel: "medio", impactScore: 25,
+    affectedPopulation: 2200000, budgetDelta: -180, riskLevel: "bajo",
+    opportunities: ["Impacto menor por IGIC (no IVA)", "Mayor consumo turístico"],
+    risks: ["Competencia fiscal con Península", "Efecto limitado en precios reales"],
+    cascadeEffects: [
+      { order: 1, description: "Armonización parcial IGIC-IVA reducido", timeframe: "3-6 meses", probability: 55 },
+    ],
+    actors: [
+      { name: "Gobierno de Canarias", type: "ccaa", stance: "neutro", influence: 65, reason: "Régimen fiscal propio (IGIC)" },
+    ],
+  },
+  {
+    id: "ir-013", scenarioId: "sim-005", territory: "Navarra", territorySlug: "navarra", impactLevel: "medio", impactScore: -30,
+    affectedPopulation: 660000, budgetDelta: -400, riskLevel: "medio",
+    opportunities: ["Coordinación sanitaria con País Vasco", "Eficiencia en compras conjuntas"],
+    risks: ["Conflicto competencial por Convenio", "Pérdida de autonomía sanitaria"],
+    cascadeEffects: [
+      { order: 1, description: "Recurso foral ante posible invasión competencial", timeframe: "0-6 meses", probability: 70 },
+    ],
+    actors: [
+      { name: "Gobierno de Navarra", type: "ccaa", stance: "perjudicado", influence: 70, reason: "Régimen foral amenazado" },
+      { name: "Geroa Bai", type: "partido", stance: "perjudicado", influence: 45, reason: "Defensa del autogobierno" },
+    ],
+  },
+  {
+    id: "ir-014", scenarioId: "sim-006", territory: "Extremadura", territorySlug: "extremadura", impactLevel: "critico", impactScore: -65,
+    affectedPopulation: 1060000, budgetDelta: -380, riskLevel: "muy-alto",
+    opportunities: ["Hub fotovoltaico nacional", "Fondos transición justa para Almaraz"],
+    risks: ["Cierre Almaraz: 1.200 empleos directos perdidos", "Déficit energético temporal"],
+    cascadeEffects: [
+      { order: 1, description: "Plan social para trabajadores de Almaraz", timeframe: "0-6 meses", probability: 90 },
+      { order: 2, description: "Aceleración de proyectos fotovoltaicos", timeframe: "6-18 meses", probability: 80 },
+    ],
+    actors: [
+      { name: "Junta de Extremadura", type: "ccaa", stance: "perjudicado", influence: 70, reason: "Almaraz es principal contribuyente fiscal" },
+      { name: "CCOO Extremadura", type: "sindicato", stance: "perjudicado", influence: 50, reason: "Empleos nucleares en riesgo" },
+    ],
+  },
+  {
+    id: "ir-015", scenarioId: "sim-003", territory: "Illes Balears", territorySlug: "illes-balears", impactLevel: "alto", impactScore: -40,
+    affectedPopulation: 1200000, budgetDelta: -80, riskLevel: "alto",
+    opportunities: ["Vivienda más accesible para trabajadores turísticos", "Desestacionalización del alquiler"],
+    risks: ["Colapso oferta ante presión turística", "Fuga hacia alquiler vacacional"],
+    cascadeEffects: [
+      { order: 1, description: "Retirada del 20% de oferta de alquiler residencial", timeframe: "0-6 meses", probability: 70 },
+      { order: 2, description: "Crisis de mano de obra turística por falta de vivienda", timeframe: "6-12 meses", probability: 60 },
+    ],
+    actors: [
+      { name: "Govern Balear", type: "ccaa", stance: "perjudicado", influence: 65, reason: "Mercado más tensionado de España" },
+    ],
+  },
+  {
+    id: "ir-016", scenarioId: "sim-001", territory: "Aragón", territorySlug: "aragon", impactLevel: "alto", impactScore: -42,
+    affectedPopulation: 1330000, budgetDelta: -580, riskLevel: "alto",
+    opportunities: ["Foco en proyectos logísticos con financiación propia"],
+    risks: ["Retraso plataforma logística PLAZA", "Impacto en plan Teruel Existe"],
+    cascadeEffects: [
+      { order: 1, description: "Renegociación prioridades con Bruselas", timeframe: "0-6 meses", probability: 75 },
+    ],
+    actors: [
+      { name: "Gobierno de Aragón", type: "ccaa", stance: "perjudicado", influence: 65, reason: "Fondos comprometidos para Teruel" },
+    ],
+  },
+  {
+    id: "ir-017", scenarioId: "sim-006", territory: "Castilla-La Mancha", territorySlug: "castilla-la-mancha", impactLevel: "medio", impactScore: 45,
+    affectedPopulation: 2050000, budgetDelta: 1200, riskLevel: "bajo",
+    opportunities: ["2ª región con más potencia fotovoltaica", "Empleo verde en zonas rurales", "Comunidades energéticas"],
+    risks: ["Impacto paisajístico en La Mancha", "Resistencia de ayuntamientos"],
+    cascadeEffects: [
+      { order: 1, description: "Boom de parques solares en La Mancha", timeframe: "0-12 meses", probability: 85 },
+      { order: 2, description: "Creación de 3.000 empleos en renovables", timeframe: "12-24 meses", probability: 70 },
+    ],
+    actors: [
+      { name: "JCCM", type: "ccaa", stance: "beneficiado", influence: 70, reason: "Hub renovable con sol y territorio" },
+    ],
+  },
+  {
+    id: "ir-018", scenarioId: "sim-001", territory: "Murcia", territorySlug: "murcia", impactLevel: "alto", impactScore: -52,
+    affectedPopulation: 1530000, budgetDelta: -620, riskLevel: "alto",
+    opportunities: ["Reasignación hacia proyecto Mar Menor"],
+    risks: ["Retraso en desaladoras comprometidas", "Impacto en agroindustria"],
+    cascadeEffects: [
+      { order: 1, description: "Paralización obras desaladoras NGEU", timeframe: "0-3 meses", probability: 85 },
+      { order: 2, description: "Crisis hídrica agravada", timeframe: "6-12 meses", probability: 60 },
+    ],
+    actors: [
+      { name: "CARM", type: "ccaa", stance: "perjudicado", influence: 65, reason: "Dependencia de fondos para agua" },
+    ],
+  },
+  {
+    id: "ir-019", scenarioId: "sim-001", territory: "Cantabria", territorySlug: "cantabria", impactLevel: "medio", impactScore: -35,
+    affectedPopulation: 585000, budgetDelta: -280, riskLevel: "medio",
+    opportunities: ["Menor dependencia relativa de NGEU"],
+    risks: ["Retraso en proyectos de conectividad", "Impacto en turismo sostenible"],
+    cascadeEffects: [
+      { order: 1, description: "Reprogramación de inversiones turísticas", timeframe: "3-6 meses", probability: 65 },
+    ],
+    actors: [
+      { name: "Gobierno de Cantabria", type: "ccaa", stance: "perjudicado", influence: 55, reason: "Fondos turismo comprometidos" },
+    ],
+  },
+  {
+    id: "ir-020", scenarioId: "sim-001", territory: "La Rioja", territorySlug: "la-rioja", impactLevel: "medio", impactScore: -30,
+    affectedPopulation: 320000, budgetDelta: -120, riskLevel: "medio",
+    opportunities: ["Sector vitivinícola poco dependiente de NGEU"],
+    risks: ["Retraso digitalización bodegas", "Impacto en programa despoblación Sierra"],
+    cascadeEffects: [
+      { order: 1, description: "Ajuste del plan de digitalización agroalimentaria", timeframe: "3-6 meses", probability: 60 },
+    ],
+    actors: [
+      { name: "Gobierno de La Rioja", type: "ccaa", stance: "perjudicado", influence: 50, reason: "CCAA pequeña con menos margen" },
+    ],
+  },
 ];
 
 const regulatoryChains: RegulatoryChain[] = [

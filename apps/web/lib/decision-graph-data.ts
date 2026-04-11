@@ -287,9 +287,9 @@ function buildVoteNodes(): GraphNode[] {
 }
 
 function buildTerritoryNodes(): GraphNode[] {
-  // Top 6 by population
-  const sorted = [...ccaaIndicators].sort((a, b) => b.population - a.population);
-  const top6 = sorted.slice(0, 6);
+  // All 17 CCAAs (excluding Ceuta and Melilla)
+  const excluded = new Set(["ceuta", "melilla"]);
+  const ccaaList = ccaaIndicators.filter((t) => !excluded.has(t.territorySlug));
 
   const territoryLabels: Record<string, string> = {
     andalucia: "Andalucía",
@@ -300,15 +300,51 @@ function buildTerritoryNodes(): GraphNode[] {
     "castilla-y-leon": "Castilla y León",
     "pais-vasco": "País Vasco",
     canarias: "Canarias",
+    aragon: "Aragón",
+    "castilla-la-mancha": "Castilla-La Mancha",
+    extremadura: "Extremadura",
+    murcia: "Región de Murcia",
+    "illes-balears": "Illes Balears",
+    asturias: "Asturias",
+    cantabria: "Cantabria",
+    navarra: "Navarra",
+    "la-rioja": "La Rioja",
   };
 
-  return top6.map((t) => ({
+  const territoryColors: Record<string, string> = {
+    andalucia: "#009150",
+    cataluna: "#FCDD09",
+    madrid: "#C60B1E",
+    "comunitat-valenciana": "#D47228",
+    galicia: "#76B6E3",
+    "castilla-y-leon": "#8B2252",
+    "pais-vasco": "#008542",
+    canarias: "#FFD700",
+    aragon: "#E30613",
+    "castilla-la-mancha": "#8B0000",
+    extremadura: "#006633",
+    murcia: "#C60B1E",
+    "illes-balears": "#6A0DAD",
+    asturias: "#0066CC",
+    cantabria: "#D32F2F",
+    navarra: "#C60B1E",
+    "la-rioja": "#388E3C",
+  };
+
+  // Size: 3 for pop > 4M, 2 for pop > 1M, 1 otherwise
+  const getSize = (pop: number): number => {
+    if (pop > 4_000_000) return 3;
+    if (pop > 1_000_000) return 2;
+    return 1;
+  };
+
+  return ccaaList.map((t) => ({
     id: `terr-${t.territorySlug}`,
     type: "territorio" as NodeType,
     label: territoryLabels[t.territorySlug] ?? t.territorySlug,
     shortLabel: territoryLabels[t.territorySlug] ?? t.territorySlug,
-    color: NODE_COLORS.territorio,
-    size: Math.max(2, Math.min(4, Math.round((t.population / 10_000_000) * 4))),
+    color: territoryColors[t.territorySlug] ?? NODE_COLORS.territorio,
+    size: getSize(t.population),
     metadata: {
       slug: t.territorySlug,
       population: t.population,
@@ -616,7 +652,18 @@ function buildTerritoryEdges(): GraphEdge[] {
       ["pp", "madrid"],
       ["pp", "andalucia"],
       ["pp", "galicia"],
+      ["pp", "comunitat-valenciana"],
+      ["pp", "murcia"],
+      ["pp", "aragon"],
+      ["pp", "castilla-y-leon"],
+      ["pp", "extremadura"],
+      ["pp", "cantabria"],
+      ["pp", "illes-balears"],
+      ["pp", "la-rioja"],
       ["psoe", "castilla-la-mancha"],
+      ["psoe", "asturias"],
+      ["psoe", "canarias"],
+      ["psoe", "navarra"],
       ["erc", "cataluna"],
       ["pnv", "pais-vasco"],
     ];
@@ -637,8 +684,9 @@ function buildTerritoryEdges(): GraphEdge[] {
   try {
     for (const fp of territoryFiscalProfiles) {
       const terrNodeId = `terr-${fp.territorySlug}`;
-      // Only for territories that have a node
-      if (fp.territorySlug === "cataluna" || fp.territorySlug === "madrid") {
+      // Include territories with significant fiscal tension
+      const fiscalTensionTerritories = new Set(["cataluna", "madrid", "pais-vasco", "navarra", "comunitat-valenciana"]);
+      if (fiscalTensionTerritories.has(fp.territorySlug)) {
         edges.push({
           id: nextEdgeId(),
           source: terrNodeId,
@@ -653,6 +701,30 @@ function buildTerritoryEdges(): GraphEdge[] {
     }
   } catch {
     // territoryFiscalProfiles may not be available
+  }
+
+  // Regional party influence on their home territories
+  const regionalInfluence: [string, string, string][] = [
+    ["bng", "galicia", "Influencia territorial BNG"],
+    ["eh-bildu", "navarra", "Implantación EH Bildu en Navarra"],
+    ["eh-bildu", "pais-vasco", "Influencia territorial EH Bildu"],
+    ["pnv", "pais-vasco", "Partido hegemónico vasco"],
+    ["coalicion-canaria", "canarias", "Coalición Canaria en Canarias"],
+    ["erc", "cataluna", "Influencia territorial ERC"],
+    ["junts", "cataluna", "Influencia territorial Junts"],
+    ["pp", "castilla-y-leon", "Hegemonía PP en Castilla y León"],
+    ["vox", "murcia", "Implantación VOX en Murcia"],
+  ];
+  for (const [slug, terr, label] of regionalInfluence) {
+    edges.push({
+      id: nextEdgeId(),
+      source: `party-${slug}`,
+      target: `terr-${terr}`,
+      type: "influye",
+      weight: 0.6,
+      label,
+      color: EDGE_COLORS.influye,
+    });
   }
 
   return edges;
