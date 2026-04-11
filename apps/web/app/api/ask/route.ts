@@ -12,7 +12,7 @@ import { getEurostatSnapshot } from "../../../lib/eurostat-live";
 // ── LLM Configuration ──
 // Gemini 2.0 Flash — free tier: 15 RPM, 1M tokens/day
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 export async function POST(request: Request) {
