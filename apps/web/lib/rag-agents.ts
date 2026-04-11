@@ -22,10 +22,11 @@ import {
   parliamentaryInitiatives,
   officialConnectors,
 } from "@espanaia/seed-data";
+import { ministries } from "./ministerios-data";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type AgentId = "normativo" | "presupuestario" | "politico-social" | "empresarial" | "medios";
+export type AgentId = "normativo" | "presupuestario" | "politico-social" | "empresarial" | "medios" | "ministerios";
 
 export interface RAGResult {
   agentId: AgentId;
@@ -109,6 +110,24 @@ const MEDIOS_KEYWORDS = [
   "dimision", "crisis", "urgente", "última", "ultima", "breaking",
 ];
 
+const MINISTERIOS_KEYWORDS = [
+  "ministerio", "ministro", "ministra", "secretaría de estado", "secretaria de estado",
+  "dirección general", "direccion general", "organismo autónomo", "organismo autonomo",
+  "gobierno", "gabinete", "consejo de ministros", "moncloa", "ejecutivo",
+  "estructura", "administración", "administracion", "departamento", "agencia",
+  "alto cargo", "secretario", "subsecretario", "director general",
+  "presidencia", "hacienda", "defensa", "interior", "exteriores", "transportes",
+  "transformación digital", "transformacion digital", "educación", "educacion",
+  "trabajo", "industria", "turismo", "agricultura", "economía", "economia",
+  "sanidad", "ciencia", "igualdad", "cultura", "inclusión", "inclusion",
+  "transición ecológica", "transicion ecologica", "vivienda", "juventud",
+  "infancia", "derechos sociales", "consumo",
+  "bolaños", "bolanos", "robles", "marlaska", "puente", "escrivá", "escriva",
+  "morant", "montero", "urtasun", "sira rego", "subirats",
+  "empleados públicos", "empleados publicos", "funcionarios", "función pública",
+  "funcion publica", "pge", "presupuestos generales",
+];
+
 /** Max chunks any single agent can return — enables early termination */
 const MAX_CHUNKS_PER_AGENT = 5;
 
@@ -120,6 +139,7 @@ export function classifyIntent(question: string): AgentId[] {
     "politico-social": 0,
     empresarial: 0,
     medios: 0,
+    ministerios: 0,
   };
 
   for (const kw of NORMATIVO_KEYWORDS) {
@@ -136,6 +156,9 @@ export function classifyIntent(question: string): AgentId[] {
   }
   for (const kw of MEDIOS_KEYWORDS) {
     if (q.includes(kw)) scores.medios++;
+  }
+  for (const kw of MINISTERIOS_KEYWORDS) {
+    if (q.includes(kw)) scores.ministerios++;
   }
 
   // Sort by score descending
@@ -706,6 +729,134 @@ function searchMedios(question: string): RAGResult {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Agent 6: MINISTERIOS — Government structure & ministry data
+// ═══════════════════════════════════════════════════════════════════════════
+
+function searchMinisterios(question: string): RAGResult {
+  const q = question.toLowerCase();
+  const words = q.split(/\s+/).filter(w => w.length > 3);
+  const context: string[] = [];
+  const sources: string[] = [];
+
+  for (const m of ministries) {
+    const searchText = [
+      m.name, m.shortName, m.acronym, m.description,
+      m.minister.name, m.minister.role, m.minister.party ?? "",
+      ...m.keyAreas,
+      ...m.tags,
+      ...m.keyPersonnel.map(p => `${p.name} ${p.role}`),
+      ...m.organismos.map(o => `${o.name} ${o.description}`),
+    ].join(" ").toLowerCase();
+
+    if (words.some(w => searchText.includes(w))) {
+      // Core ministry info
+      context.push(
+        `[Ministerio] ${m.name} (${m.acronym}). ` +
+        `Ministro/a: ${m.minister.name} (${m.minister.party ?? "ind."}, desde ${m.minister.since}). ` +
+        `${m.description} ` +
+        `Presupuesto: ${m.budget.totalM.toLocaleString("es-ES")} M€ (${m.budget.changePct > 0 ? "+" : ""}${m.budget.changePct}% vs anterior, ${m.budget.pctOfPGE}% PGE). ` +
+        `Empleados: ${m.employeeCount.toLocaleString("es-ES")}. ` +
+        `Áreas clave: ${m.keyAreas.join(", ")}.`
+      );
+      sources.push(`Ministerio: ${m.shortName}`);
+
+      // Key personnel
+      if (m.keyPersonnel.length > 0 && words.some(w =>
+        ["secretar", "director", "subsecretar", "cargo", "personal", "equipo", "quién", "quien"].some(k => w.includes(k))
+      )) {
+        const personnel = m.keyPersonnel.slice(0, 5).map(p =>
+          `${p.name} — ${p.role} (desde ${p.since}${p.party ? `, ${p.party}` : ""})`
+        ).join("; ");
+        context.push(`[Altos cargos de ${m.shortName}] ${personnel}.`);
+        sources.push(`Personal clave: ${m.shortName}`);
+      }
+
+      // Organismos
+      if (m.organismos.length > 0 && words.some(w =>
+        ["organismo", "agencia", "secretaría", "secretaria", "dirección", "direccion", "estructura", "depende"].some(k => w.includes(k))
+      )) {
+        const orgs = m.organismos.slice(0, 6).map(o =>
+          `${o.name} (${o.type}${o.budgetM ? `, ${o.budgetM} M€` : ""}${o.employeeCount ? `, ${o.employeeCount} emp.` : ""})`
+        ).join("; ");
+        context.push(`[Organismos de ${m.shortName}] ${orgs}.`);
+        sources.push(`Organismos: ${m.shortName}`);
+      }
+
+      // Recent activity
+      if (m.recentActivity.length > 0 && words.some(w =>
+        ["actividad", "reciente", "último", "ultimo", "novedad", "acción", "accion", "boe", "nota", "prensa"].some(k => w.includes(k))
+      )) {
+        const acts = m.recentActivity.slice(0, 3).map(a =>
+          `${a.date} [${a.type}] ${a.title}: ${a.summary} (impacto: ${a.impact})`
+        ).join("; ");
+        context.push(`[Actividad reciente de ${m.shortName}] ${acts}.`);
+        sources.push(`Actividad: ${m.shortName}`);
+      }
+
+      // Metrics
+      if (m.metrics.length > 0 && words.some(w =>
+        ["indicador", "métrica", "metrica", "rendimiento", "resultado", "dato", "cifra", "estadística", "estadistica"].some(k => w.includes(k))
+      )) {
+        const mets = m.metrics.slice(0, 4).map(mt =>
+          `${mt.label}: ${mt.value} ${mt.unit} (${mt.trend}${mt.target ? `, objetivo: ${mt.target}` : ""})`
+        ).join("; ");
+        context.push(`[Indicadores de ${m.shortName}] ${mets}.`);
+        sources.push(`Indicadores: ${m.shortName}`);
+      }
+
+      // Budget details
+      if (words.some(w =>
+        ["presupuest", "gasto", "partida", "capital", "corriente", "personal"].some(k => w.includes(k))
+      )) {
+        const items = m.budget.keyItems.slice(0, 3).map(i =>
+          `${i.label}: ${i.amountM} M€ — ${i.description}`
+        ).join("; ");
+        context.push(
+          `[Presupuesto de ${m.shortName}] Total: ${m.budget.totalM.toLocaleString("es-ES")} M€. ` +
+          `Capital: ${m.budget.capitalM} M€, Corriente: ${m.budget.currentM} M€, Personal: ${m.budget.staffM} M€. ` +
+          `Partidas clave: ${items}.`
+        );
+        sources.push(`Presupuesto: ${m.shortName}`);
+      }
+
+      // Official data sources
+      if (words.some(w =>
+        ["fuente", "dato", "portal", "api", "web", "transparencia", "abierto"].some(k => w.includes(k))
+      )) {
+        const srcs = m.officialSources.slice(0, 4).map(s =>
+          `${s.label} (${s.type}, ${s.status}): ${s.description}`
+        ).join("; ");
+        context.push(`[Fuentes oficiales de ${m.shortName}] ${srcs}.`);
+        sources.push(`Fuentes: ${m.shortName}`);
+      }
+
+      if (context.length >= MAX_CHUNKS_PER_AGENT) break;
+    }
+  }
+
+  // Government-wide summary for general questions
+  if (context.length === 0 && (q.includes("gobierno") || q.includes("ministerio") || q.includes("ejecutivo") || q.includes("gabinete"))) {
+    const totalBudget = ministries.reduce((s, m) => s + m.budget.totalM, 0);
+    const totalEmployees = ministries.reduce((s, m) => s + m.employeeCount, 0);
+    const byBudget = [...ministries].sort((a, b) => b.budget.totalM - a.budget.totalM).slice(0, 5);
+    context.push(
+      `[Gobierno de España] ${ministries.length} ministerios. ` +
+      `Presupuesto total: ${totalBudget.toLocaleString("es-ES")} M€. ` +
+      `Empleados públicos: ${totalEmployees.toLocaleString("es-ES")}. ` +
+      `Top 5 por presupuesto: ${byBudget.map(m => `${m.shortName} (${m.budget.totalM.toLocaleString("es-ES")} M€)`).join(", ")}.`
+    );
+    sources.push("Estructura del Gobierno de España");
+
+    // List all ministers
+    const ministerList = ministries.map(m => `${m.shortName}: ${m.minister.name} (${m.minister.party ?? "ind."})`).join("; ");
+    context.push(`[Consejo de Ministros] ${ministerList}.`);
+    sources.push("Consejo de Ministros");
+  }
+
+  return { agentId: "ministerios", agentName: "RAG Ministerios", context, sources };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Main: Route question → agents → collect context
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -715,6 +866,7 @@ export const agentMap: Record<AgentId, (q: string) => RAGResult> = {
   "politico-social": searchPoliticoSocial,
   empresarial: searchEmpresarial,
   medios: searchMedios,
+  ministerios: searchMinisterios,
 };
 
 /** Agent display names for status events */
@@ -724,6 +876,7 @@ export const AGENT_LABELS: Record<AgentId, string> = {
   "politico-social": "RAG Político-Social",
   empresarial: "RAG Empresarial",
   medios: "RAG Medios",
+  ministerios: "RAG Ministerios",
 };
 
 /** Run a single agent and trim to cap */
