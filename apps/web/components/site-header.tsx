@@ -6,7 +6,7 @@ import { useLang } from "../lib/i18n/context";
 import type { Translations } from "../lib/i18n/translations";
 
 interface SiteHeaderProps {
-  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip";
+  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip" | "confidencial";
 }
 
 type NavKey = keyof Translations["nav"];
@@ -123,6 +123,7 @@ const navGroups: { label: string; groupKey: string; items: NavItem[] }[] = [
     groupKey: "productos",
     items: [
       { href: "/confidencial-vip", label: "Confidencial VIP", section: "confidencial-vip" },
+      { href: "/confidencial", label: "Confidencial Doc", section: "confidencial" },
       { href: "/radar-regulatorio", label: "Radar Regulatorio", section: "radar-regulatorio" },
       { href: "/subvenciones", label: "Subvenciones", section: "subvenciones" },
       { href: "/sales-intelligence", label: "Sales Intelligence", section: "sales-intelligence" },

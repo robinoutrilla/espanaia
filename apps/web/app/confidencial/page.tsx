@@ -200,7 +200,7 @@ export default function ConfidencialPage() {
   if (phase === "auth") {
     return (
       <main className="page-shell detail-page"><div className="ambient ambient-one"/><div className="ambient ambient-two"/>
-        <SiteHeader currentSection="confidencial-vip" />
+        <SiteHeader currentSection="confidencial" />
         <section style={{ display:"flex",alignItems:"center",justifyContent:"center",minHeight:"70vh",padding:"var(--space-xl)" }}>
           <div style={{ maxWidth:440,width:"100%",padding:"40px",borderRadius:"16px",background:"var(--surface-raised,var(--surface))",border:"2px solid var(--border)",boxShadow:"0 8px 32px rgba(0,0,0,0.12)" }}>
             <div style={{ textAlign:"center",marginBottom:"24px" }}>
@@ -224,7 +224,7 @@ export default function ConfidencialPage() {
   if (phase === "topics") {
     return (
       <main className="page-shell detail-page"><div className="ambient ambient-one"/><div className="ambient ambient-two"/>
-        <SiteHeader currentSection="confidencial-vip" />
+        <SiteHeader currentSection="confidencial" />
         <section className="panel section-panel" style={{ maxWidth:960,margin:"var(--space-xl) auto" }}>
           <h1 style={{ fontSize:"1.3rem",fontWeight:800,textAlign:"center",marginBottom:"4px" }}>Configurar Informe Semanal</h1>
           <p style={{ fontSize:"0.85rem",color:"var(--ink-soft)",textAlign:"center",marginBottom:"var(--space-lg)" }}>{dateStr} — Seleccione los temas a incluir</p>
@@ -294,7 +294,7 @@ export default function ConfidencialPage() {
   if (phase === "generating") {
     return (
       <main className="page-shell detail-page"><div className="ambient ambient-one"/><div className="ambient ambient-two"/>
-        <SiteHeader currentSection="confidencial-vip" />
+        <SiteHeader currentSection="confidencial" />
         <section style={{ display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh",padding:"var(--space-xl)" }}>
           <div style={{ maxWidth:500,width:"100%",textAlign:"center" }}>
             <div style={{ width:48,height:48,border:"4px solid var(--border)",borderTopColor:"#1a7a3a",borderRadius:"50%",animation:"cSpin 700ms linear infinite",margin:"0 auto 24px" }}/>
@@ -319,7 +319,7 @@ export default function ConfidencialPage() {
   return (
     <main className="page-shell detail-page c-editor-page">
       <div className="ambient ambient-one"/><div className="ambient ambient-two"/>
-      <SiteHeader currentSection="confidencial-vip" />
+      <SiteHeader currentSection="confidencial" />
 
       {/* Toolbar */}
       <div className="c-toolbar no-print">
