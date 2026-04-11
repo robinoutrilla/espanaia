@@ -504,7 +504,7 @@ export default function SubvencionesPage() {
                     </div>
                     <div className="sub-card-meta">
                       <span className="sub-badge sub-badge-budget">{formatM(t.totalReceivedM)}</span>
-                      <span className="sub-badge">{t.perCapita.toLocaleString("es-ES")} \u20ac/hab</span>
+                      <span className="sub-badge">{t.perCapita.toLocaleString("es-ES")} {"€"}/hab</span>
                     </div>
                     <div className="sub-card-tags">{t.topSectors?.map((s, i) => <span key={i} className="sub-tag">{sectorName(s)}</span>)}</div>
                     <div className="sub-ngeu-bar">

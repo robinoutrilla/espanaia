@@ -1087,7 +1087,7 @@ function SpendingRow({ item, maxAmount, rank }: { item: SpendingItem; maxAmount:
             color: item.category.color, fontSize: "0.78rem", fontWeight: 600,
           }}
         >
-          {expanded ? "Ocultar detalle \u25B2" : "Ver detalle \u25BC"}
+          {expanded ? "Ocultar detalle ▲" : "Ver detalle ▼"}
         </button>
 
         {expanded && (

@@ -610,7 +610,7 @@ export default function EducacionPage() {
                 return (
                   <article key={ch.id} className={`edu-card ${isCompleted ? "edu-card-completed" : ""}`} onClick={() => setExpanded(isOpen ? null : ch.id)}>
                     <h3 className="edu-card-title">
-                      {isCompleted && <span className="edu-completed-icon">\u2713 </span>}
+                      {isCompleted && <span className="edu-completed-icon">{"✓ "}</span>}
                       {ch.title}
                     </h3>
                     <div className="edu-card-badges">

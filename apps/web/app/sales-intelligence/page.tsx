@@ -484,7 +484,7 @@ export default function SalesIntelligencePage() {
                       <span className="si-velocity-card-stage">{stageLabel[v.stage] ?? v.stage}</span>
                       <span className="si-velocity-card-days">{v.avgDaysInStage} días</span>
                       {v.avgDaysToAward > 0 && <span className="si-velocity-card-total">{v.avgDaysToAward}d hasta adjudicación</span>}
-                      {i < arr.length - 1 && <span className="si-velocity-arrow">\u2192</span>}
+                      {i < arr.length - 1 && <span className="si-velocity-arrow">{"→"}</span>}
                     </div>
                   ))}
                 </div>

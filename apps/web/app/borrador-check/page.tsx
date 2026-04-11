@@ -1224,7 +1224,7 @@ export default function BorradorCheckPage() {
                   fontSize: "1.3rem", color: "#059669", margin: "0 0 var(--space-md)",
                   display: "flex", alignItems: "center", gap: 8,
                 }}>
-                  <span style={{ fontSize: "1.5rem" }}>\u2713</span>
+                  <span style={{ fontSize: "1.5rem" }}>{"✓"}</span>
                   Deducciones que SI aplicas ({analysis.active.length})
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-sm)" }}>

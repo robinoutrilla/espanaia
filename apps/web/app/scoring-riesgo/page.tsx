@@ -652,7 +652,7 @@ export default function ScoringRiesgoPage() {
                   <div className="sr-correlation-grid">
                     {correlations.map((c, i) => (
                       <div key={i} className="sr-corr-item">
-                        <span className="sr-corr-factors">{c.factor1} \u2194 {c.factor2}</span>
+                        <span className="sr-corr-factors">{c.factor1} {"↔"} {c.factor2}</span>
                         <div className="sr-corr-bar">
                           <div className="sr-corr-fill" style={{
                             width: `${Math.abs(c.coefficient) * 100}%`,
@@ -707,8 +707,8 @@ export default function ScoringRiesgoPage() {
               <div className="sr-matrix-container">
                 <div className="sr-matrix-plot">
                   {/* Axis labels */}
-                  <span className="sr-matrix-y-label">Impacto \u2191</span>
-                  <span className="sr-matrix-x-label">Probabilidad \u2192</span>
+                  <span className="sr-matrix-y-label">Impacto {"↑"}</span>
+                  <span className="sr-matrix-x-label">Probabilidad {"→"}</span>
                   {/* Quadrant labels */}
                   <span className="sr-matrix-q sr-matrix-q1">VIGILAR</span>
                   <span className="sr-matrix-q sr-matrix-q2">CRÍTICO</span>
@@ -759,7 +759,7 @@ export default function ScoringRiesgoPage() {
                       <h3 className="sr-card-title">{t.name}</h3>
                       <div className="sr-proj-scores">
                         <span className="sr-proj-current" style={{ color: scoreColor(t.overallScore) }}>{t.overallScore}</span>
-                        <span className="sr-proj-arrow">\u2192</span>
+                        <span className="sr-proj-arrow">{"→"}</span>
                         <span className="sr-proj-future" style={{ color: scoreColor(t.forecast[t.forecast.length - 1]?.projected ?? t.overallScore) }}>
                           {t.forecast[t.forecast.length - 1]?.projected ?? t.overallScore}
                         </span>

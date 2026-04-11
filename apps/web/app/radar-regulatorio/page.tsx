@@ -440,7 +440,7 @@ export default function RadarRegulatorioPage() {
                             <ul>
                               {a.complianceChecklist.map((item, i) => (
                                 <li key={i} className="rr-checklist-item">
-                                  <span className="rr-check-icon">\u2610</span> {item}
+                                  <span className="rr-check-icon">{"☐"}</span> {item}
                                 </li>
                               ))}
                             </ul>
