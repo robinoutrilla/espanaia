@@ -1,14 +1,17 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   /api/ask — Streaming RAG Q&A powered by 4 specialized agents + Ollama
+   /api/ask — Streaming RAG Q&A powered by specialized agents + Gemini
    Sends Server-Sent Events so the UI can show real-time progress:
      step → classify → agent (×N) → generating → done / error
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { classifyIntent, runAgent, buildContext, AGENT_LABELS, type AgentId, type RAGResult } from "../../../lib/rag-agents";
+import { classifyIntent, runAgent, buildContext, AGENT_LABELS, type RAGResult } from "../../../lib/rag-agents";
 import { getTrending } from "../../../lib/rss-trending";
 
-const OLLAMA_URL = "http://localhost:11434/api/chat";
-const MODEL = "llama3.1:8b";
+// ── LLM Configuration ──
+// Gemini 2.0 Flash — free tier: 15 RPM, 1M tokens/day
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 export async function POST(request: Request) {
   try {
@@ -78,7 +81,7 @@ export async function POST(request: Request) {
           const uniqueSources = [...new Set(allSources)];
           const totalContext = agents.reduce((s, a) => s + a.context.length, 0);
 
-          // ── Step 3: Generate with Ollama ──
+          // ── Step 3: Generate with Gemini ──
           send("status", {
             step: "generating",
             message: totalContext > 0
@@ -86,45 +89,83 @@ export async function POST(request: Request) {
               : "Generando respuesta...",
           });
 
-          const systemPrompt = `Eres un analista político experto en España en IAPÑ.com.\nResponde en español, conciso y riguroso. Cita fuentes del contexto. No inventes datos.\n${combinedContext ? `\nCONTEXTO:\n${combinedContext}` : "Sin contexto específico para esta consulta."}`;
+          const systemPrompt = [
+            "Eres un analista político experto en España que trabaja en IAPÑ.com, la plataforma de inteligencia política abierta.",
+            "Responde SIEMPRE en español, de forma concisa y rigurosa.",
+            "Cita fuentes del contexto proporcionado. No inventes datos.",
+            "Si el contexto no contiene información suficiente, dilo claramente.",
+            "Usa formato Markdown para estructurar la respuesta cuando sea apropiado.",
+          ].join("\n");
+
+          const userPrompt = combinedContext
+            ? `CONTEXTO:\n${combinedContext}\n\nPREGUNTA: ${q}`
+            : `PREGUNTA: ${q}\n\n(Sin contexto específico disponible — responde con conocimiento general sobre política española.)`;
+
+          if (!GEMINI_API_KEY) {
+            // No API key configured — return RAG context directly
+            send("done", {
+              answer: combinedContext
+                ? `[LLM no configurado — mostrando contexto RAG]\n\n${combinedContext}`
+                : "No hay API key de Gemini configurada. Añade GEMINI_API_KEY en las variables de entorno.",
+              sources: uniqueSources,
+              agents: agentSummary,
+              routedTo,
+              totalContext,
+              llmOffline: true,
+            });
+            return;
+          }
 
           try {
-            const ollamaRes = await fetch(OLLAMA_URL, {
+            const geminiRes = await fetch(GEMINI_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                model: MODEL,
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: q },
+                contents: [
+                  {
+                    role: "user",
+                    parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+                  },
                 ],
-                stream: false,
-                options: { temperature: 0.3, num_predict: 600, num_ctx: 4096 },
+                generationConfig: {
+                  temperature: 0.3,
+                  maxOutputTokens: 1024,
+                  topP: 0.9,
+                },
               }),
-              signal: AbortSignal.timeout(45_000),
+              signal: AbortSignal.timeout(30_000),
             });
 
-            if (!ollamaRes.ok) throw new Error(`Ollama ${ollamaRes.status}`);
-            const data = await ollamaRes.json();
+            if (!geminiRes.ok) {
+              const errBody = await geminiRes.text().catch(() => "");
+              throw new Error(`Gemini ${geminiRes.status}: ${errBody.slice(0, 200)}`);
+            }
+
+            const data = await geminiRes.json();
+            const answer =
+              data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+              "Sin respuesta del modelo.";
 
             send("done", {
-              answer: data.message?.content ?? "Sin respuesta del modelo.",
+              answer,
               sources: uniqueSources,
               agents: agentSummary,
               routedTo,
               totalContext,
+              model: GEMINI_MODEL,
             });
-          } catch {
-            // Ollama offline — return RAG context directly
+          } catch (llmErr) {
+            // Gemini error — return RAG context as fallback
+            const errMsg = llmErr instanceof Error ? llmErr.message : "Error desconocido";
             send("done", {
               answer: combinedContext
-                ? `[Ollama no disponible \u2014 mostrando contexto RAG]\n\n${combinedContext}`
-                : "No se pudo conectar con Ollama (localhost:11434).",
+                ? `[Error LLM: ${errMsg}]\n\nContexto RAG disponible:\n\n${combinedContext}`
+                : `Error al conectar con Gemini: ${errMsg}`,
               sources: uniqueSources,
               agents: agentSummary,
               routedTo,
               totalContext,
-              ollamaOffline: true,
+              llmError: errMsg,
             });
           }
         } catch (err) {
