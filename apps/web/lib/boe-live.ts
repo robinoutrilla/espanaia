@@ -158,10 +158,11 @@ async function fetchBoeForDate(dateStr: string): Promise<OfficialBulletinItem[]>
       const sectionCode = seccion.codigo;
       const sectionName = SECTION_LABELS[sectionCode] ?? seccion.nombre;
 
-      for (const dept of toArray(seccion.departamento)) {
-        for (const epi of toArray(dept.epigrafe)) {
+      for (const dept of toArray(seccion.departamento ?? [])) {
+        for (const epi of toArray(dept.epigrafe ?? [])) {
+          if (!epi.item) continue;
           for (const item of toArray(epi.item)) {
-            if (!item.identificador || !item.titulo) continue;
+            if (!item?.identificador || !item?.titulo) continue;
 
             items.push({
               id: item.identificador.toLowerCase(),
