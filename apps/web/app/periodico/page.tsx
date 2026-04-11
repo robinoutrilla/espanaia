@@ -25,6 +25,15 @@ interface EditorialNote {
   id: string; title: string; content: string; author: string; date: string; disclaimer: string;
 }
 
+interface LiveFeedItem {
+  title: string;
+  link: string;
+  pubDate: string;
+  source: string;
+  sourceCategory: "media" | "institutional" | "agency";
+  matches: { type: string; slug: string; name: string; href: string }[];
+}
+
 interface PeriodicoData {
   articles: NewsArticle[];
   editorials: EditorialNote[];
@@ -32,12 +41,16 @@ interface PeriodicoData {
   categories: { id: string; label: string; count: number }[];
   stats: { totalArticles: number; avgBenefitScore: number; partiesAnalyzed: number; sourcesReferenced: number; lastUpdated: string };
   methodology: string;
+  liveFeed?: LiveFeedItem[];
+  fetchedAt?: string;
 }
 
 type TabView = "portada" | "analisis";
 type CategoryFilter = "todas" | NewsArticle["category"];
 
-const CACHE_KEY = "periodico-data-v2";
+const CACHE_KEY = "periodico-data-v3";
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (match server ISR)
+const LIVE_POLL_INTERVAL = 3 * 60 * 1000; // poll live feed every 3 min
 
 const categoryLabels: Record<string, string> = {
   politica: "Política", economia: "Economía", sociedad: "Sociedad",
@@ -332,6 +345,66 @@ function ArticleDetail({ article, articles, onBack, onNavigate }: { article: New
   );
 }
 
+/* ── Live Feed Panel ── */
+
+function timeAgo(dateStr: string): string {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "ahora";
+  if (mins < 60) return `hace ${mins} min`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `hace ${hrs}h`;
+  return `hace ${Math.floor(hrs / 24)}d`;
+}
+
+const sourceCategoryIcons: Record<string, string> = {
+  media: "📰", institutional: "🏛️", agency: "⚡",
+};
+
+function LiveFeedPanel({ items, lastUpdated }: { items: LiveFeedItem[]; lastUpdated?: string }) {
+  if (!items.length) return null;
+  return (
+    <div className="np-sidebar-section np-live-feed">
+      <div className="np-live-feed-header">
+        <span className="np-live-dot" />
+        <h3 className="np-sidebar-title">EN DIRECTO</h3>
+        {lastUpdated && (
+          <span className="np-live-updated">{timeAgo(lastUpdated)}</span>
+        )}
+      </div>
+      <div className="np-live-feed-list">
+        {items.slice(0, 20).map((item, i) => (
+          <a
+            key={`${item.link}-${i}`}
+            className="np-live-item"
+            href={item.link}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div className="np-live-item-top">
+              <span className="np-live-source">
+                {sourceCategoryIcons[item.sourceCategory] ?? "📰"} {item.source}
+              </span>
+              <span className="np-live-time">{timeAgo(item.pubDate)}</span>
+            </div>
+            <span className="np-live-title">{item.title}</span>
+            {item.matches.length > 0 && (
+              <div className="np-live-matches">
+                {item.matches.slice(0, 3).map((m) => (
+                  <span key={m.slug} className={`np-live-match np-live-match-${m.type}`}>
+                    {m.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main page ── */
 
 export default function PeriodicoPage() {
@@ -342,24 +415,55 @@ export default function PeriodicoPage() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("todas");
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [showMethodology, setShowMethodology] = useState(false);
+  const [liveFeed, setLiveFeed] = useState<LiveFeedItem[]>([]);
+  const [liveFeedUpdated, setLiveFeedUpdated] = useState<string | undefined>();
 
+  // Initial data load with short-lived cache
   useEffect(() => {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY);
       if (cached) {
-        setData(JSON.parse(cached));
-        setLoading(false);
-        return;
+        const parsed = JSON.parse(cached);
+        const age = Date.now() - (parsed._cachedAt || 0);
+        if (age < CACHE_TTL) {
+          setData(parsed);
+          if (parsed.liveFeed) setLiveFeed(parsed.liveFeed);
+          if (parsed.fetchedAt) setLiveFeedUpdated(parsed.fetchedAt);
+          setLoading(false);
+          return;
+        }
+        sessionStorage.removeItem(CACHE_KEY);
       }
     } catch {}
     fetch("/api/periodico")
       .then((r) => { if (!r.ok) throw new Error("Error al cargar"); return r.json(); })
       .then((d: PeriodicoData) => {
         setData(d);
-        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {}
+        if (d.liveFeed) setLiveFeed(d.liveFeed);
+        if (d.fetchedAt) setLiveFeedUpdated(d.fetchedAt);
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ...d, _cachedAt: Date.now() })); } catch {}
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Poll live RSS feed every 3 minutes
+  useEffect(() => {
+    const poll = () => {
+      fetch("/api/periodico?live=true")
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => {
+          if (d?.liveFeed?.length) {
+            setLiveFeed(d.liveFeed);
+            setLiveFeedUpdated(d.fetchedAt);
+          }
+        })
+        .catch(() => {});
+    };
+    // First poll after 30s (let page settle)
+    const initial = setTimeout(poll, 30_000);
+    const interval = setInterval(poll, LIVE_POLL_INTERVAL);
+    return () => { clearTimeout(initial); clearInterval(interval); };
   }, []);
 
   const filteredArticles = useMemo(() => {
@@ -551,6 +655,9 @@ export default function PeriodicoPage() {
 
         {/* Sidebar */}
         <aside className="np-sidebar">
+          {/* Live RSS feed */}
+          <LiveFeedPanel items={liveFeed} lastUpdated={liveFeedUpdated} />
+
           {/* Editorials */}
           {data.editorials.length > 0 && (
             <div className="np-sidebar-section">

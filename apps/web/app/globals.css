@@ -11826,6 +11826,64 @@ a:hover { color: var(--link); }
   border-bottom: 1px solid var(--border);
 }
 .np-sidebar-section:last-child { border-bottom: none; margin-bottom: 0; }
+
+/* ── Live Feed (Sidebar) ── */
+.np-live-feed { background: var(--surface-alt, #fafaf8); border-radius: 6px; padding: 14px !important; }
+.np-live-feed-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.np-live-feed-header .np-sidebar-title {
+  margin-bottom: 0; padding-bottom: 0; border-bottom: none; color: var(--rojo, #dc2626);
+}
+.np-live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--rojo, #dc2626);
+  animation: np-live-pulse 2s ease-in-out infinite;
+}
+@keyframes np-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.np-live-updated {
+  margin-left: auto; font-size: 0.68rem; color: var(--ink-muted);
+}
+.np-live-feed-list {
+  display: flex; flex-direction: column; gap: 0;
+  max-height: 520px; overflow-y: auto;
+}
+.np-live-item {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 8px 0; border-bottom: 1px solid var(--border-light, #e5e5e0);
+  text-decoration: none; color: inherit;
+  transition: background 0.15s;
+}
+.np-live-item:last-child { border-bottom: none; }
+.np-live-item:hover { background: rgba(0,0,0,0.02); }
+.np-live-item-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+}
+.np-live-source {
+  font-size: 0.68rem; font-weight: 600; color: var(--ink-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.np-live-time {
+  font-size: 0.64rem; color: var(--ink-muted); white-space: nowrap; flex-shrink: 0;
+}
+.np-live-title {
+  font-size: 0.82rem; font-weight: 600; line-height: 1.3;
+  color: var(--ink); display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.np-live-item:hover .np-live-title { color: var(--rojo, #dc2626); }
+.np-live-matches {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;
+}
+.np-live-match {
+  font-size: 0.62rem; font-weight: 600; padding: 1px 5px;
+  border-radius: 3px; background: var(--surface); border: 1px solid var(--border-light);
+}
+.np-live-match-politician { color: var(--azul, #1d4ed8); border-color: var(--azul, #1d4ed8); }
+.np-live-match-party { color: var(--rojo, #dc2626); border-color: var(--rojo, #dc2626); }
+.np-live-match-territory { color: #d97706; border-color: #d97706; }
 .np-sidebar-title {
   font-family: var(--font-display); font-size: 0.72rem; font-weight: 800;
   letter-spacing: 0.1em; color: var(--ink); margin-bottom: 12px;

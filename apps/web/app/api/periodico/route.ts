@@ -7,19 +7,37 @@ import {
   searchArticles,
   type ArticleCategory,
 } from "../../../lib/periodico-data";
+import { getTrending, type TrendingItem } from "../../../lib/rss-trending";
+
+/** Revalidate every 5 minutes — Vercel ISR */
+export const revalidate = 300;
 
 /**
  * GET /api/periodico
  *
  * Query parameters:
- *   (none)          → full periodicoData payload
+ *   (none)          → full periodicoData payload + live RSS feed
  *   ?id=<articleId> → single article
  *   ?category=<cat> → articles filtered by category
  *   ?portada=true   → front-page articles only
  *   ?q=<search>     → full-text search across headlines, summaries & tags
+ *   ?live=true      → only live RSS feed (for polling)
  */
-export function GET(request: Request) {
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+
+  // Live RSS only (lightweight endpoint for polling)
+  if (searchParams.get("live") === "true") {
+    try {
+      const trending = await getTrending(30);
+      return NextResponse.json({
+        liveFeed: trending,
+        fetchedAt: new Date().toISOString(),
+      });
+    } catch {
+      return NextResponse.json({ liveFeed: [], fetchedAt: new Date().toISOString() });
+    }
+  }
 
   // Single article by id
   const id = searchParams.get("id");
@@ -71,6 +89,17 @@ export function GET(request: Request) {
     return NextResponse.json({ query: q, results: searchArticles(q) });
   }
 
-  // Default: return full dataset
-  return NextResponse.json(periodicoData);
+  // Default: return full dataset + live RSS feed
+  let liveFeed: TrendingItem[] = [];
+  try {
+    liveFeed = await getTrending(30);
+  } catch {
+    // Non-blocking: return editorial data even if RSS fails
+  }
+
+  return NextResponse.json({
+    ...periodicoData,
+    liveFeed,
+    fetchedAt: new Date().toISOString(),
+  });
 }
