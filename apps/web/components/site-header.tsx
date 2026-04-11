@@ -6,7 +6,7 @@ import { useLang } from "../lib/i18n/context";
 import type { Translations } from "../lib/i18n/translations";
 
 interface SiteHeaderProps {
-  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip" | "confidencial" | "borrador-check";
+  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip" | "confidencial" | "borrador-check" | "programas";
 }
 
 type NavKey = keyof Translations["nav"];
@@ -42,6 +42,7 @@ const navGroups: { label: string; groupKey: string; items: NavItem[] }[] = [
     items: [
       { href: "/territories", key: "territories", section: "territories" },
       { href: "/parties", key: "parties", section: "parties" },
+      { href: "/programas", label: "Programas", section: "programas" },
       { href: "/politicians", key: "politicians", section: "politicians" },
     ],
   },
