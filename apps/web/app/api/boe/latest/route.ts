@@ -1,6 +1,7 @@
 import { boeItems, seedGeneratedAt } from "@espanaia/seed-data";
 import { NextResponse } from "next/server";
 import { getLatestBoe, getBoeStats } from "../../../../lib/boe-live";
+import { persistBoeItems } from "../../../../lib/boe-store";
 
 /** Revalidate every hour — BOE publishes once daily */
 export const revalidate = 3600;
@@ -37,6 +38,8 @@ export async function GET(request: Request) {
   try {
     const result = await getLatestBoe(limit);
     if (result.items.length > 0) {
+      // Persist to archive for RAG (non-blocking)
+      try { persistBoeItems(result.items, result.boeDate); } catch { /* ignore */ }
       return NextResponse.json({
         live: true,
         generatedAt: result.fetchedAt,

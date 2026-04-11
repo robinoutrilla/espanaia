@@ -15,6 +15,7 @@ import { euComparisons } from "./eurostat-data";
 import { assetDeclarations } from "./declarations-data";
 import { companyForms, businessProcedures, businessRegulations, businessStats2025, businessIncentives } from "./business-data";
 import { readArchive } from "./rss-store";
+import { searchBoeArchive } from "./boe-store";
 import {
   parties,
   politicians,
@@ -265,6 +266,22 @@ function searchNormativo(question: string): RAGResult {
       );
       sources.push(`Congreso: ${ini.dossierNumber}`);
     }
+  }
+
+  // Live BOE archive — search persisted daily items
+  try {
+    const boeResults = searchBoeArchive({ query: question, limit: 8, minImpact: 40 });
+    for (const item of boeResults) {
+      if (context.length >= MAX_CHUNKS_PER_AGENT * 2) break; // Allow more for live data
+      context.push(
+        `[BOE ${item.publicationDate}] ${item.title}. ` +
+        `Sección: ${item.category}. Organismo: ${item.ministryOrBody}. ` +
+        `Impacto: ${item.impactScore}/100.${item.affectedTerritories.length > 0 ? ` Territorios: ${item.affectedTerritories.join(", ")}.` : ""}`
+      );
+      sources.push(`BOE: ${item.id.toUpperCase()}`);
+    }
+  } catch {
+    // Non-blocking — continue without BOE archive
   }
 
   return { agentId: "normativo", agentName: "RAG Normativo", context, sources };
