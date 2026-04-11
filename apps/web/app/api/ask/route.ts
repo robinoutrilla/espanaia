@@ -6,6 +6,7 @@
 
 import { classifyIntent, runAgent, buildContext, AGENT_LABELS, type RAGResult } from "../../../lib/rag-agents";
 import { getTrending } from "../../../lib/rss-trending";
+import { getIneIndicators } from "../../../lib/ine-live";
 
 // ── LLM Configuration ──
 // Gemini 2.0 Flash — free tier: 15 RPM, 1M tokens/day
@@ -41,13 +42,16 @@ export async function POST(request: Request) {
             agents: routedTo,
           });
 
-          // ── Pre-fetch: refresh RSS archive if medios is routed ──
+          // ── Pre-fetch: warm caches for routed agents ──
+          const prefetches: Promise<unknown>[] = [];
           if (routedTo.includes("medios")) {
-            try {
-              await getTrending(30);
-            } catch {
-              // Non-blocking — continue with stale archive
-            }
+            prefetches.push(getTrending(30).catch(() => {}));
+          }
+          if (routedTo.includes("presupuestario")) {
+            prefetches.push(getIneIndicators().catch(() => {}));
+          }
+          if (prefetches.length > 0) {
+            await Promise.all(prefetches);
           }
 
           // ── Step 2: Run each agent with status ──

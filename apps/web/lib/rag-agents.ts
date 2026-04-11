@@ -16,6 +16,7 @@ import { assetDeclarations } from "./declarations-data";
 import { companyForms, businessProcedures, businessRegulations, businessStats2025, businessIncentives } from "./business-data";
 import { readArchive } from "./rss-store";
 import { searchBoeArchive } from "./boe-store";
+import { getIneSummarySync } from "./ine-live";
 import {
   parties,
   politicians,
@@ -431,6 +432,18 @@ function searchPresupuestario(question: string): RAGResult {
       );
       sources.push(`Haciendas Locales — ${ayu.name}`);
     }
+  }
+
+  // Live INE indicators (from cache — populated by /api/ine)
+  try {
+    const ineLines = getIneSummarySync();
+    for (const line of ineLines) {
+      if (context.length >= MAX_CHUNKS_PER_AGENT * 2) break;
+      context.push(line);
+    }
+    if (ineLines.length > 0) sources.push("INE Live — Indicadores en tiempo real");
+  } catch {
+    // Non-blocking
   }
 
   return { agentId: "presupuestario", agentName: "RAG Presupuestario", context, sources };
