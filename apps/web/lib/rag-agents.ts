@@ -111,7 +111,7 @@ const MEDIOS_KEYWORDS = [
 ];
 
 const MINISTERIOS_KEYWORDS = [
-  "ministerio", "ministro", "ministra", "secretaría de estado", "secretaria de estado",
+  "ministerio", "ministerios", "ministro", "ministra", "secretaría de estado", "secretaria de estado",
   "dirección general", "direccion general", "organismo autónomo", "organismo autonomo",
   "gobierno", "gabinete", "consejo de ministros", "moncloa", "ejecutivo",
   "estructura", "administración", "administracion", "departamento", "agencia",
