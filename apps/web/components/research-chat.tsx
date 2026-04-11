@@ -16,6 +16,7 @@ const AGENT_COLORS: Record<string, { bg: string; fg: string; icon: string; label
   "politico-social": { bg: "var(--verde-soft)", fg: "var(--verde)", icon: "S", label: "RAG Político-Social" },
   empresarial: { bg: "#fef3c7", fg: "#b45309", icon: "E", label: "RAG Empresarial" },
   medios: { bg: "#ede9fe", fg: "#7c3aed", icon: "M", label: "RAG Medios" },
+  ministerios: { bg: "#dbeafe", fg: "#1d4ed8", icon: "G", label: "RAG Ministerios" },
 };
 
 /** Actions that can be emitted to the right panel */
@@ -311,9 +312,7 @@ export function ResearchChat({ onAction }: Props) {
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         role: "system",
-        content: msg.includes("Ollama") || msg.includes("conectar")
-          ? msg
-          : `No se pudo conectar con Ollama (localhost:11434). Asegúrate de que está activo.`,
+        content: `Error al procesar la consulta: ${msg}`,
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -341,7 +340,7 @@ export function ResearchChat({ onAction }: Props) {
             <span className="eyebrow">Investigaci{"ó"}n</span>
             <h2>Pregunta a los datos de Espa{"ñ"}a</h2>
             <p>
-              Cuatro motores RAG procesan fuentes oficiales espa{"ñ"}olas y europeas.
+              Seis motores RAG procesan fuentes oficiales espa{"ñ"}olas y europeas.
               Cada respuesta incluye citas trazables y acciones para explorar los datos.
             </p>
 
@@ -517,44 +516,159 @@ export function ResearchChat({ onAction }: Props) {
   );
 }
 
-/** Render basic markdown: **bold**, *italic*, and line breaks */
-function renderMarkdown(text: string): React.ReactNode[] {
+/** Tag colors for RAG context blocks like [Ministerio], [Partido], etc. */
+const TAG_COLORS: Record<string, { bg: string; fg: string }> = {
+  ministerio: { bg: "#dbeafe", fg: "#1d4ed8" },
+  partido: { bg: "#fee2e2", fg: "#dc2626" },
+  politico: { bg: "#d1fae5", fg: "#059669" },
+  "legislación ue": { bg: "#fef3c7", fg: "#b45309" },
+  "infracción ue": { bg: "#fecaca", fg: "#991b1b" },
+  "transposición": { bg: "#e0e7ff", fg: "#4338ca" },
+  sesion: { bg: "#f3e8ff", fg: "#7c3aed" },
+  empresa: { bg: "#fef3c7", fg: "#92400e" },
+  contrato: { bg: "#ecfccb", fg: "#3f6212" },
+  medio: { bg: "#ede9fe", fg: "#6d28d9" },
+  presupuesto: { bg: "#cffafe", fg: "#0e7490" },
+};
+
+function getTagColor(tag: string): { bg: string; fg: string } {
+  const lower = tag.toLowerCase();
+  for (const [key, color] of Object.entries(TAG_COLORS)) {
+    if (lower.includes(key)) return color;
+  }
+  return { bg: "#f3f4f6", fg: "#374151" };
+}
+
+/** Render inline formatting: **bold**, *italic*, `code` */
+function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  // Split into lines first, then process inline formatting
-  const lines = text.split("\n");
+  const regex = /(`([^`]+)`|\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
 
-  for (let li = 0; li < lines.length; li++) {
-    const line = lines[li];
-    // Process **bold** and *italic* within each line
-    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    if (match[2]) {
+      parts.push(<code key={`c-${keyPrefix}-${match.index}`} className="rc-inline-code">{match[2]}</code>);
+    } else if (match[3]) {
+      parts.push(<strong key={`b-${keyPrefix}-${match.index}`}>{match[3]}</strong>);
+    } else if (match[4]) {
+      parts.push(<em key={`i-${keyPrefix}-${match.index}`}>{match[4]}</em>);
+    }
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
 
-    while ((match = regex.exec(line)) !== null) {
-      // Text before the match
-      if (match.index > lastIndex) {
-        parts.push(line.slice(lastIndex, match.index));
+/** Render markdown with headers, lists, RAG blocks, and paragraphs */
+function renderMarkdown(text: string): React.ReactNode {
+  // Strip the "[LLM no configurado...]" or "[Error LLM...]" prefix line
+  const cleanedText = text
+    .replace(/^\[LLM no configurado[^\]]*\]\s*\n*/i, "")
+    .replace(/^\[Error LLM[^\]]*\]\s*\n*/i, "")
+    .replace(/^Contexto RAG disponible:\s*\n*/i, "")
+    .trim();
+
+  const lines = cleanedText.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Skip empty lines
+    if (!trimmed) { i++; continue; }
+
+    // RAG context block: [Tag] Content. Key: value. Key: value.
+    const ragMatch = trimmed.match(/^\[([^\]]+)\]\s*(.+)/);
+    if (ragMatch) {
+      const tag = ragMatch[1];
+      const content = ragMatch[2];
+      const color = getTagColor(tag);
+
+      // Parse "Key: value." segments into structured display
+      const segments = content.split(/\.\s+/).filter(Boolean);
+      const title = segments[0] ?? "";
+      const details = segments.slice(1);
+
+      elements.push(
+        <div key={`rag-${i}`} className="rc-rag-block">
+          <div className="rc-rag-header">
+            <span className="rc-rag-tag" style={{ background: color.bg, color: color.fg }}>
+              {tag}
+            </span>
+            <span className="rc-rag-title">{title}{!title.endsWith(".") ? "." : ""}</span>
+          </div>
+          {details.length > 0 && (
+            <div className="rc-rag-details">
+              {details.map((d, j) => {
+                const colonIdx = d.indexOf(":");
+                if (colonIdx > 0 && colonIdx < 30) {
+                  const key = d.slice(0, colonIdx).trim();
+                  const val = d.slice(colonIdx + 1).trim();
+                  return (
+                    <div key={j} className="rc-rag-detail">
+                      <span className="rc-rag-key">{key}:</span>{" "}
+                      <span className="rc-rag-val">{val}{!val.endsWith(".") ? "." : ""}</span>
+                    </div>
+                  );
+                }
+                return <div key={j} className="rc-rag-detail">{d}.</div>;
+              })}
+            </div>
+          )}
+        </div>
+      );
+      i++;
+      continue;
+    }
+
+    // Markdown headers: # ## ###
+    const headerMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
+    if (headerMatch) {
+      const level = headerMatch[1].length as 1 | 2 | 3;
+      const Tag = `h${level + 1}` as "h2" | "h3" | "h4";
+      elements.push(<Tag key={`h-${i}`} className={`rc-heading rc-h${level}`}>{renderInline(headerMatch[2], `h${i}`)}</Tag>);
+      i++;
+      continue;
+    }
+
+    // Unordered list items: - item or * item
+    if (/^[-*]\s+/.test(trimmed)) {
+      const listItems: React.ReactNode[] = [];
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) {
+        const itemText = lines[i].replace(/^\s*[-*]\s+/, "");
+        listItems.push(<li key={`li-${i}`}>{renderInline(itemText, `li${i}`)}</li>);
+        i++;
       }
-      if (match[2]) {
-        // **bold**
-        parts.push(<strong key={`b-${li}-${match.index}`}>{match[2]}</strong>);
-      } else if (match[3]) {
-        // *italic*
-        parts.push(<em key={`i-${li}-${match.index}`}>{match[3]}</em>);
+      elements.push(<ul key={`ul-${i}`} className="rc-list">{listItems}</ul>);
+      continue;
+    }
+
+    // Numbered list items: 1. item
+    if (/^\d+\.\s+/.test(trimmed)) {
+      const listItems: React.ReactNode[] = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+        const itemText = lines[i].replace(/^\s*\d+\.\s+/, "");
+        listItems.push(<li key={`oli-${i}`}>{renderInline(itemText, `oli${i}`)}</li>);
+        i++;
       }
-      lastIndex = regex.lastIndex;
+      elements.push(<ol key={`ol-${i}`} className="rc-list rc-list-ordered">{listItems}</ol>);
+      continue;
     }
-    // Remaining text in the line
-    if (lastIndex < line.length) {
-      parts.push(line.slice(lastIndex));
-    }
-    // Add newline between lines (not after last)
-    if (li < lines.length - 1) {
-      parts.push("\n");
-    }
+
+    // Regular paragraph
+    elements.push(<p key={`p-${i}`} className="rc-paragraph">{renderInline(trimmed, `p${i}`)}</p>);
+    i++;
   }
 
-  return parts;
+  return <div className="rc-markdown">{elements}</div>;
 }
 
 function actionIcon(type: ChatAction["type"]): string {
