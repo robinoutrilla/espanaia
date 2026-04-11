@@ -7,3 +7,5 @@ apps/api
 release
 *.app
 *.icns
+data/
+*.jsonl
