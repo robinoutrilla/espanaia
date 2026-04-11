@@ -6,7 +6,7 @@ import { useLang } from "../lib/i18n/context";
 import type { Translations } from "../lib/i18n/translations";
 
 interface SiteHeaderProps {
-  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico";
+  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine";
 }
 
 type NavKey = keyof Translations["nav"];
@@ -128,6 +128,17 @@ const navGroups: { label: string; groupKey: string; items: NavItem[] }[] = [
       { href: "/asistente", label: "Asistente", section: "asistente" },
       { href: "/cargos-publicos", label: "Cargos Públicos", section: "cargos-publicos" },
       { href: "/educacion", label: "Educación Cívica", section: "educacion" },
+    ],
+  },
+  {
+    label: "Nuevo",
+    groupKey: "nuevo",
+    items: [
+      { href: "/constitucion-viva", label: "Constitución Viva", section: "constitucion-viva" },
+      { href: "/political-twin", label: "Political Twin", section: "political-twin" },
+      { href: "/simulador", label: "Simulador de España", section: "simulador" },
+      { href: "/next-gen", label: "España Next Gen", section: "next-gen" },
+      { href: "/signal-engine", label: "Signal Engine", section: "signal-engine" },
     ],
   },
 ];
