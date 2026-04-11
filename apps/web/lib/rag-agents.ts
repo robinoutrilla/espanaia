@@ -53,8 +53,10 @@ const NORMATIVO_KEYWORDS = [
   "juridico", "legal", "tribunal", "constitucional", "orgánica", "organica",
   "reforma", "código", "codigo", "boletín", "boletin", "normativo", "normativa",
   "contrato", "licitación", "licitacion", "adjudicación", "adjudicacion",
-  "subvención", "subvencion", "auditoría", "auditoria", "fiscalización",
-  "fiscalizacion", "tribunal de cuentas",
+  "subvención", "subvencion", "subsidio", "ayuda", "ayudas", "honorarios",
+  "auditoría", "auditoria", "fiscalización",
+  "fiscalizacion", "tribunal de cuentas", "prestación", "prestacion",
+  "renta mínima", "renta minima", "dependencia", "bono social",
 ];
 
 const PRESUPUESTARIO_KEYWORDS = [
@@ -63,6 +65,9 @@ const PRESUPUESTARIO_KEYWORDS = [
   "financiacion", "fondos", "ngeu", "next generation", "perte", "dinero",
   "millones", "euros", "pib", "gdp", "inflación", "inflacion", "hacienda",
   "igae", "desembolso", "transferencia", "inversión", "inversion", "subsidio",
+  "subvención", "subvencion", "ayuda", "ayudas", "honorarios", "beca",
+  "prestación", "prestacion", "renta mínima", "renta minima", "dependencia",
+  "autónomo", "autonomo", "bono social", "alquiler",
   "eurostat", "europa", "ue", "brecha", "indicador", "paro", "desempleo",
   "pobreza", "gini", "renovable", "emisiones", "digital", "educación", "educacion",
   "diputación", "diputacion", "provincial", "provincia", "ayuntamiento", "municipal",
@@ -132,7 +137,7 @@ const MINISTERIOS_KEYWORDS = [
 ];
 
 /** Max chunks any single agent can return — enables early termination */
-const MAX_CHUNKS_PER_AGENT = 5;
+const MAX_CHUNKS_PER_AGENT = 8;
 
 export function classifyIntent(question: string): AgentId[] {
   const q = question.toLowerCase();
@@ -245,15 +250,20 @@ function searchNormativo(question: string): RAGResult {
     }
   }
 
-  // Subsidies
+  // Subsidies — search by keywords, tags, territory, and summary
   for (const sub of publicSubsidies) {
-    const text = `${sub.title} ${sub.grantingBody} ${sub.summary}`.toLowerCase();
-    if (q.split(/\s+/).some(w => w.length > 3 && text.includes(w))) {
+    const text = `${sub.title} ${sub.grantingBody} ${sub.summary} ${sub.tags.join(" ")} ${sub.territorySlugs.join(" ")}`.toLowerCase();
+    const words = q.split(/\s+/).filter(w => w.length > 2);
+    const isMatch = words.some(w => text.includes(w));
+    // Also match if any territory in the query matches
+    const territoryMatch = sub.territorySlugs.some(t => q.includes(t));
+    if (isMatch || territoryMatch) {
       context.push(
         `[Subvención] ${sub.title}: ${sub.amountM} M€. ` +
-        `Organismo: ${sub.grantingBody}. Tipo beneficiario: ${sub.beneficiaryType}.`
+        `Organismo: ${sub.grantingBody}. Tipo beneficiario: ${sub.beneficiaryType}. ` +
+        `${sub.summary} Territorios: ${sub.territorySlugs.join(", ")}.`
       );
-      sources.push(`Subvenciones: ${sub.title.substring(0, 50)}`);
+      sources.push(`Subvenciones: ${sub.title.substring(0, 60)}`);
     }
   }
 
@@ -389,6 +399,28 @@ function searchPresupuestario(question: string): RAGResult {
       `Hallazgos críticos: ${auditSummary.criticalFindings}.`
     );
     sources.push("Tribunal de Cuentas — Resumen");
+  }
+
+  // Subsidies — search by territory and keywords in presupuestario too
+  const subsidyKeywords = ["subsidio", "subvención", "subvencion", "ayuda", "ayudas", "honorarios",
+    "prestación", "prestacion", "renta mínima", "renta minima", "dependencia", "bono social",
+    "autónomo", "autonomo", "beca", "alquiler", "agrario", "inserción", "insercion"];
+  const isSubsidyQuery = subsidyKeywords.some(kw => q.includes(kw));
+  if (isSubsidyQuery) {
+    for (const sub of publicSubsidies) {
+      if (context.length >= MAX_CHUNKS_PER_AGENT * 2) break;
+      const text = `${sub.title} ${sub.summary} ${sub.tags.join(" ")} ${sub.territorySlugs.join(" ")}`.toLowerCase();
+      const words = q.split(/\s+/).filter(w => w.length > 2);
+      const isMatch = words.some(w => text.includes(w));
+      const territoryMatch = sub.territorySlugs.some(t => q.includes(t));
+      if (isMatch || territoryMatch) {
+        context.push(
+          `[Subvención/Subsidio] ${sub.title}: ${sub.amountM} M€. ${sub.summary} ` +
+          `Organismo: ${sub.grantingBody}. Territorios: ${sub.territorySlugs.join(", ")}.`
+        );
+        sources.push(`Subvenciones: ${sub.title.substring(0, 60)}`);
+      }
+    }
   }
 
   // Contracts summary
