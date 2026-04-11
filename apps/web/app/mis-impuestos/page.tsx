@@ -767,6 +767,103 @@ export default function MisImpuestosPage() {
             </div>
           </section>
 
+          {/* ── Visual Charts ─────────────────────────────────── */}
+          <section className="panel section-panel" style={{ animation: "fadeIn 500ms ease" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "var(--space-lg)", maxWidth: 1000, margin: "0 auto" }}>
+
+              {/* Donut Chart */}
+              <div style={{ textAlign: "center" }}>
+                <h3 style={{ fontSize: "1rem", marginBottom: "var(--space-md)", color: "var(--ink)" }}>Distribucion de tu IRPF</h3>
+                <svg viewBox="0 0 200 200" width="220" height="220" style={{ margin: "0 auto", display: "block" }}>
+                  {(() => {
+                    const top6 = spending.slice(0, 6);
+                    const otherTotal = spending.slice(6).reduce((s, i) => s + i.amount, 0);
+                    const items = [...top6, ...(otherTotal > 0 ? [{ category: { name: "Otros", color: "#9ca3af", id: "otros", icon: "", description: "", examples: [] }, amount: otherTotal, perMonth: otherTotal / 12 }] : [])];
+                    const total = items.reduce((s, i) => s + i.amount, 0);
+                    let cumulative = 0;
+                    const R = 70; const CX = 100; const CY = 100;
+                    return items.map((item, i) => {
+                      const pct = total > 0 ? item.amount / total : 0;
+                      const startAngle = cumulative * 2 * Math.PI - Math.PI / 2;
+                      cumulative += pct;
+                      const endAngle = cumulative * 2 * Math.PI - Math.PI / 2;
+                      const largeArc = pct > 0.5 ? 1 : 0;
+                      const x1 = CX + R * Math.cos(startAngle);
+                      const y1 = CY + R * Math.sin(startAngle);
+                      const x2 = CX + R * Math.cos(endAngle);
+                      const y2 = CY + R * Math.sin(endAngle);
+                      if (pct < 0.005) return null;
+                      return (
+                        <g key={i}>
+                          <path
+                            d={`M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`}
+                            fill={item.category.color}
+                            stroke="var(--bg)"
+                            strokeWidth="2"
+                            style={{ transition: "opacity 0.2s", cursor: "pointer" }}
+                          >
+                            <title>{item.category.name}: {fmt(item.amount)} euros ({(pct * 100).toFixed(1)}%)</title>
+                          </path>
+                        </g>
+                      );
+                    });
+                  })()}
+                  <circle cx="100" cy="100" r="40" fill="var(--bg)" />
+                  <text x="100" y="96" textAnchor="middle" fontSize="14" fontWeight="800" fill="var(--ink)">{fmt(tax.cuotaTotal)}</text>
+                  <text x="100" y="112" textAnchor="middle" fontSize="8" fill="var(--ink-muted)">euros IRPF</text>
+                </svg>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginTop: "var(--space-sm)" }}>
+                  {spending.slice(0, 6).map(item => (
+                    <span key={item.category.id} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.7rem", color: "var(--ink-muted)" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: item.category.color, display: "inline-block" }} />
+                      {item.category.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tax Bracket Chart */}
+              <div>
+                <h3 style={{ fontSize: "1rem", marginBottom: "var(--space-md)", textAlign: "center", color: "var(--ink)" }}>Tramos IRPF (escala estatal)</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {STATE_BRACKETS.map((bracket, i) => {
+                    const prevLimit = i > 0 ? STATE_BRACKETS[i - 1].upTo : 0;
+                    const isActive = tax.baseImponible > prevLimit;
+                    const isCurrent = tax.baseImponible > prevLimit && (bracket.upTo === Infinity || tax.baseImponible <= bracket.upTo);
+                    const fillPct = !isActive ? 0 : bracket.upTo === Infinity ? 100 : Math.min(100, ((Math.min(tax.baseImponible, bracket.upTo) - prevLimit) / (bracket.upTo - prevLimit)) * 100);
+                    const label = bracket.upTo === Infinity ? `${fmtInt(prevLimit)}+ euros` : `${fmtInt(prevLimit)} - ${fmtInt(bracket.upTo)} euros`;
+                    return (
+                      <div key={i} style={{
+                        padding: "8px 12px", borderRadius: 8,
+                        border: isCurrent ? "2px solid var(--azul)" : "1px solid var(--border)",
+                        background: isCurrent ? "var(--azul)08" : "var(--bg)",
+                        opacity: isActive ? 1 : 0.4,
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", marginBottom: 4 }}>
+                          <span style={{ color: "var(--ink)", fontWeight: isCurrent ? 700 : 400 }}>{label}</span>
+                          <span style={{ fontWeight: 700, color: isCurrent ? "var(--azul)" : "var(--ink-muted)" }}>{(bracket.rate * 2 * 100).toFixed(1)}%</span>
+                        </div>
+                        <div style={{ height: 6, borderRadius: 3, background: "var(--border)", overflow: "hidden" }}>
+                          <div style={{
+                            height: "100%", borderRadius: 3,
+                            background: isCurrent ? "var(--azul)" : isActive ? "#059669" : "transparent",
+                            width: `${fillPct}%`,
+                            animation: "growBar 600ms ease-out",
+                          }} />
+                        </div>
+                        {isCurrent && (
+                          <div style={{ fontSize: "0.7rem", color: "var(--azul)", marginTop: 3, fontWeight: 600 }}>
+                            Tu renta esta aqui
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Spending breakdown */}
           <section className="panel section-panel" style={{ animation: "fadeIn 600ms ease" }}>
             <h2 style={{ fontSize: "1.1rem", marginBottom: "4px", textAlign: "center" }}>
@@ -912,7 +1009,9 @@ function SummaryCard({ label, value, sub, color, highlight }: {
 }
 
 function SpendingRow({ item, maxAmount, rank }: { item: SpendingItem; maxAmount: number; rank: number }) {
+  const [expanded, setExpanded] = useState(false);
   const pct = (item.amount / maxAmount) * 100;
+  const totalPct = pct;
   return (
     <div style={{
       display: "grid",
@@ -979,6 +1078,48 @@ function SpendingRow({ item, maxAmount, rank }: { item: SpendingItem; maxAmount:
             </span>
           ))}
         </div>
+
+        {/* Expand toggle */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            background: "none", border: "none", padding: "4px 0 0", cursor: "pointer",
+            color: item.category.color, fontSize: "0.78rem", fontWeight: 600,
+          }}
+        >
+          {expanded ? "Ocultar detalle \u25B2" : "Ver detalle \u25BC"}
+        </button>
+
+        {expanded && (
+          <div style={{
+            marginTop: 8, padding: 12, borderRadius: 8,
+            background: item.category.color + "08", fontSize: "0.82rem",
+            lineHeight: 1.6, color: "var(--ink)",
+            animation: "fadeIn 200ms ease",
+          }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+              <div>
+                <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>Anual</div>
+                <div style={{ fontWeight: 700, color: item.category.color }}>{fmt(item.amount)} euros</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>Mensual</div>
+                <div style={{ fontWeight: 700, color: item.category.color }}>{fmt(item.perMonth)} euros</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>Diario</div>
+                <div style={{ fontWeight: 700 }}>{fmt(item.amount / 365)} euros</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textTransform: "uppercase" }}>% de tu IRPF</div>
+                <div style={{ fontWeight: 700 }}>{fmt(pct)}%</div>
+              </div>
+            </div>
+            <p style={{ margin: 0, color: "var(--ink-muted)", fontSize: "0.8rem" }}>
+              {item.category.description}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1068,6 +1068,109 @@ export default function BorradorCheckPage() {
               </div>
             </div>
 
+            {/* GRAFICOS */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+              gap: "var(--space-md)", marginBottom: "var(--space-lg)",
+            }}>
+              {/* Donut: Active vs Inactive */}
+              <div style={{
+                padding: "var(--space-md)", background: "var(--bg)", borderRadius: 16,
+                border: "1px solid var(--border)", textAlign: "center",
+              }}>
+                <h3 style={{ fontSize: "0.95rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Estado de tus deducciones</h3>
+                <svg viewBox="0 0 200 200" width="180" height="180" style={{ margin: "0 auto", display: "block" }}>
+                  {(() => {
+                    const active = analysis.active.length;
+                    const inactive = analysis.inactive.length;
+                    const total = active + inactive;
+                    if (total === 0) return null;
+                    const activePct = active / total;
+                    const R = 70; const CX = 100; const CY = 100;
+                    const endAngle = activePct * 2 * Math.PI - Math.PI / 2;
+                    const startAngle = -Math.PI / 2;
+                    const x1 = CX + R * Math.cos(startAngle);
+                    const y1 = CY + R * Math.sin(startAngle);
+                    const x2 = CX + R * Math.cos(endAngle);
+                    const y2 = CY + R * Math.sin(endAngle);
+                    const largeArc = activePct > 0.5 ? 1 : 0;
+                    return (
+                      <>
+                        <circle cx={CX} cy={CY} r={R} fill="#fee2e2" stroke="none" />
+                        {activePct > 0 && activePct < 1 && (
+                          <path d={`M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`} fill="#d1fae5" />
+                        )}
+                        {activePct >= 1 && <circle cx={CX} cy={CY} r={R} fill="#d1fae5" />}
+                        <circle cx={CX} cy={CY} r="42" fill="var(--bg)" />
+                        <text x={CX} y={CY - 4} textAnchor="middle" fontSize="20" fontWeight="800" fill="var(--ink)">{active}/{total}</text>
+                        <text x={CX} y={CY + 12} textAnchor="middle" fontSize="8" fill="var(--ink-muted)">activas</text>
+                      </>
+                    );
+                  })()}
+                </svg>
+                <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 8, fontSize: "0.8rem" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#d1fae5", border: "2px solid #059669", display: "inline-block" }} />
+                    <span style={{ color: "#059669", fontWeight: 600 }}>Activas ({analysis.active.length})</span>
+                  </span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#fee2e2", border: "2px solid #dc2626", display: "inline-block" }} />
+                    <span style={{ color: "#dc2626", fontWeight: 600 }}>Inactivas ({analysis.inactive.length})</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Bar chart: Savings by category */}
+              <div style={{
+                padding: "var(--space-md)", background: "var(--bg)", borderRadius: 16,
+                border: "1px solid var(--border)",
+              }}>
+                <h3 style={{ fontSize: "0.95rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Ahorro potencial por categoria</h3>
+                {(() => {
+                  const categories: Record<string, { active: number; potential: number; color: string }> = {};
+                  for (const d of deductions) {
+                    if (!categories[d.category]) categories[d.category] = { active: 0, potential: 0, color: CATEGORY_COLORS[d.category] ?? "#6b7280" };
+                    if (d.isActive) categories[d.category].active += d.actualSaving;
+                    else categories[d.category].potential += d.maxSaving;
+                  }
+                  const entries = Object.entries(categories).sort((a, b) => (b[1].active + b[1].potential) - (a[1].active + a[1].potential));
+                  const maxVal = Math.max(...entries.map(([, v]) => v.active + v.potential), 1);
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {entries.map(([cat, vals]) => (
+                        <div key={cat}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", marginBottom: 3 }}>
+                            <span style={{ color: vals.color, fontWeight: 600 }}>{cat}</span>
+                            <span style={{ color: "var(--ink-muted)" }}>{fmt(vals.active + vals.potential)} euros</span>
+                          </div>
+                          <div style={{ height: 10, borderRadius: 5, background: "var(--border)", overflow: "hidden", display: "flex" }}>
+                            <div style={{
+                              height: "100%", background: vals.color,
+                              width: `${(vals.active / maxVal) * 100}%`,
+                              transition: "width 0.6s ease",
+                            }} />
+                            <div style={{
+                              height: "100%", background: vals.color + "40",
+                              width: `${(vals.potential / maxVal) * 100}%`,
+                              transition: "width 0.6s ease",
+                            }} />
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ display: "flex", gap: 12, fontSize: "0.7rem", color: "var(--ink-muted)", marginTop: 4 }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ width: 12, height: 6, borderRadius: 3, background: "#059669", display: "inline-block" }} /> Ahorro activo
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ width: 12, height: 6, borderRadius: 3, background: "#05966940", display: "inline-block" }} /> Potencial
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
             {/* BARRA DE PROGRESO */}
             <div style={{
               padding: "var(--space-md)", background: "var(--bg)", borderRadius: 12,

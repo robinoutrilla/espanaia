@@ -437,6 +437,126 @@ export default function ProgramasPage() {
               </div>
             </div>
 
+            {/* Visual charts */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "var(--space-md)", marginBottom: "var(--space-lg)",
+            }}>
+              {/* Hemicycle seats bar */}
+              <div style={{
+                padding: "var(--space-md)", background: "var(--bg)", borderRadius: 12,
+                border: "1px solid var(--border)",
+              }}>
+                <h3 style={{ fontSize: "0.9rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Representacion parlamentaria</h3>
+                <div style={{ display: "flex", height: 24, borderRadius: 6, overflow: "hidden", marginBottom: 8 }}>
+                  {PARTIES.sort((a, b) => b.seats - a.seats).map(p => (
+                    <div key={p.slug} style={{
+                      width: `${(p.seats / 350) * 100}%`, background: p.color,
+                      height: "100%", transition: "width 0.4s",
+                      opacity: p.slug === party.slug ? 1 : 0.35,
+                      position: "relative",
+                    }} title={`${p.acronym}: ${p.seats} escanos`} />
+                  ))}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                  <span style={{ color: party.color, fontWeight: 700 }}>{party.acronym}: {party.seats} escanos</span>
+                  <span style={{ color: "var(--ink-muted)" }}>350 totales | Mayoria: 176</span>
+                </div>
+                <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {PARTIES.sort((a, b) => b.seats - a.seats).map(p => (
+                    <span key={p.slug} style={{
+                      fontSize: "0.7rem", display: "flex", alignItems: "center", gap: 3,
+                      opacity: p.slug === party.slug ? 1 : 0.6,
+                    }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 2, background: p.color, display: "inline-block" }} />
+                      <span style={{ color: "var(--ink-muted)" }}>{p.acronym} ({p.seats})</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Policy status donut */}
+              <div style={{
+                padding: "var(--space-md)", background: "var(--bg)", borderRadius: 12,
+                border: "1px solid var(--border)", textAlign: "center",
+              }}>
+                <h3 style={{ fontSize: "0.9rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Estado de las politicas</h3>
+                <svg viewBox="0 0 200 200" width="160" height="160" style={{ margin: "0 auto", display: "block" }}>
+                  {(() => {
+                    const counts = { cumplida: 0, "en-curso": 0, incumplida: 0, "sin-datos": 0 };
+                    for (const p of party.policies) counts[p.status]++;
+                    const items = [
+                      { label: "Cumplida", count: counts.cumplida, color: "#059669" },
+                      { label: "En curso", count: counts["en-curso"], color: "#d97706" },
+                      { label: "Incumplida", count: counts.incumplida, color: "#dc2626" },
+                      { label: "Sin datos", count: counts["sin-datos"], color: "#9ca3af" },
+                    ].filter(i => i.count > 0);
+                    const total = items.reduce((s, i) => s + i.count, 0);
+                    let cum = 0; const R = 65; const CX = 100; const CY = 100;
+                    return (
+                      <>
+                        {items.map((item, i) => {
+                          const pct = item.count / total;
+                          const startAngle = cum * 2 * Math.PI - Math.PI / 2;
+                          cum += pct;
+                          const endAngle = cum * 2 * Math.PI - Math.PI / 2;
+                          if (pct < 0.01) return null;
+                          const la = pct > 0.5 ? 1 : 0;
+                          const x1 = CX + R * Math.cos(startAngle);
+                          const y1 = CY + R * Math.sin(startAngle);
+                          const x2 = CX + R * Math.cos(endAngle);
+                          const y2 = CY + R * Math.sin(endAngle);
+                          return <path key={i} d={pct >= 0.999 ? `M ${CX} ${CY - R} A ${R} ${R} 0 1 1 ${CX - 0.01} ${CY - R} Z` : `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${la} 1 ${x2} ${y2} Z`} fill={item.color} stroke="var(--bg)" strokeWidth="2"><title>{item.label}: {item.count}</title></path>;
+                        })}
+                        <circle cx={CX} cy={CY} r="35" fill="var(--bg)" />
+                        <text x={CX} y={CY + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--ink)">{total} pol.</text>
+                      </>
+                    );
+                  })()}
+                </svg>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 4 }}>
+                  {[
+                    { label: "Cumplida", color: "#059669" },
+                    { label: "En curso", color: "#d97706" },
+                    { label: "Sin datos", color: "#9ca3af" },
+                  ].map(s => (
+                    <span key={s.label} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: "0.7rem", color: "var(--ink-muted)" }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, display: "inline-block" }} />
+                      {s.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Priority radar */}
+              <div style={{
+                padding: "var(--space-md)", background: "var(--bg)", borderRadius: 12,
+                border: "1px solid var(--border)", textAlign: "center",
+              }}>
+                <h3 style={{ fontSize: "0.9rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Prioridades del partido</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {party.policies.map((pol, i) => {
+                    const barPct = pol.priority === "alta" ? 100 : pol.priority === "media" ? 60 : 30;
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: "0.68rem", color: "var(--ink-muted)", width: 100, textAlign: "right", flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {pol.area.split(" ")[0]}
+                        </span>
+                        <div style={{ flex: 1, height: 8, borderRadius: 4, background: "var(--border)", overflow: "hidden" }}>
+                          <div style={{
+                            height: "100%", borderRadius: 4,
+                            background: pol.priority === "alta" ? party.color : pol.priority === "media" ? party.color + "80" : party.color + "30",
+                            width: `${barPct}%`,
+                            transition: "width 0.5s ease",
+                          }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* Area filter */}
             <div style={{ marginBottom: "var(--space-md)" }}>
               <select
@@ -528,6 +648,36 @@ export default function ProgramasPage() {
               ))}
             </div>
 
+            {/* Seats comparison */}
+            <div style={{
+              marginBottom: "var(--space-md)", padding: "var(--space-md)",
+              background: "var(--bg)", borderRadius: 12, border: "1px solid var(--border)",
+            }}>
+              <h3 style={{ fontSize: "0.9rem", margin: "0 0 var(--space-sm)", color: "var(--ink)" }}>Fuerza parlamentaria comparada</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {comparedParties.sort((a, b) => b.seats - a.seats).map(p => (
+                  <div key={p.slug} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 50, fontSize: "0.85rem", fontWeight: 700, color: p.color, textAlign: "right" }}>{p.acronym}</span>
+                    <div style={{ flex: 1, height: 20, borderRadius: 6, background: "var(--border)", overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", borderRadius: 6, background: p.color,
+                        width: `${(p.seats / 176) * 100}%`,
+                        maxWidth: "100%",
+                        transition: "width 0.5s ease",
+                        display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 6,
+                      }}>
+                        <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "white" }}>{p.seats}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "0.7rem", color: "var(--ink-muted)", width: 30 }}>esc.</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", marginTop: 6, textAlign: "center" }}>
+                Linea de mayoria absoluta: 176 escanos
+              </div>
+            </div>
+
             {/* Area filter for comparison */}
             <div style={{ marginBottom: "var(--space-md)" }}>
               <select
@@ -611,6 +761,38 @@ export default function ProgramasPage() {
             <p style={{ color: "var(--ink-muted)", marginBottom: "var(--space-lg)", fontSize: "0.95rem" }}>
               Cada partido lanza predicciones sobre economia, politica y sociedad. Aqui contrastamos sus afirmaciones con la realidad.
             </p>
+
+            {/* Accuracy comparison chart */}
+            <div style={{
+              marginBottom: "var(--space-lg)", padding: "var(--space-md)",
+              background: "var(--bg)", borderRadius: 12, border: "1px solid var(--border)",
+            }}>
+              <h3 style={{ fontSize: "0.95rem", margin: "0 0 var(--space-md)", color: "var(--ink)" }}>Ranking de fiabilidad</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[...PARTIES].sort((a, b) => {
+                  const accA = a.predictions.length > 0 ? ((a.predictions.filter(p => p.result === "acertada").length + a.predictions.filter(p => p.result === "parcial").length * 0.5) / a.predictions.length) * 100 : 0;
+                  const accB = b.predictions.length > 0 ? ((b.predictions.filter(p => p.result === "acertada").length + b.predictions.filter(p => p.result === "parcial").length * 0.5) / b.predictions.length) * 100 : 0;
+                  return accB - accA;
+                }).map((p, i) => {
+                  const acc = p.predictions.length > 0 ? Math.round(((p.predictions.filter(pr => pr.result === "acertada").length + p.predictions.filter(pr => pr.result === "parcial").length * 0.5) / p.predictions.length) * 100) : 0;
+                  return (
+                    <div key={p.slug} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ width: 20, fontSize: "0.8rem", fontWeight: 700, color: "var(--ink-muted)", textAlign: "right" }}>#{i + 1}</span>
+                      <span style={{ width: 55, fontSize: "0.85rem", fontWeight: 700, color: p.color }}>{p.acronym}</span>
+                      <div style={{ flex: 1, height: 16, borderRadius: 4, background: "var(--border)", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%", borderRadius: 4,
+                          background: acc >= 50 ? "#059669" : acc >= 30 ? "#d97706" : "#dc2626",
+                          width: `${acc}%`,
+                          transition: "width 0.6s ease",
+                        }} />
+                      </div>
+                      <span style={{ width: 40, fontSize: "0.85rem", fontWeight: 700, color: acc >= 50 ? "#059669" : acc >= 30 ? "#d97706" : "#dc2626" }}>{acc}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
             {PARTIES.map(p => {
               const stats = {
