@@ -205,18 +205,18 @@ function EmbeddedPage({ href, label, fallbackText }: { href: string; label: stri
 
 function renderEntityCard(action: ChatAction, tipo: string) {
   if (action.href) {
-    return <EmbeddedPage href={action.href} label={action.label} fallbackText={`Ficha de ${tipo} en IAPÑ.`} />;
+    return <EmbeddedPage href={action.href} label={action.label} fallbackText={`Ficha de ${tipo} en IAÑ.`} />;
   }
   return (
     <div className="research-context-entity">
       <h3>{action.label}</h3>
-      <p>Ficha de {tipo} en IAPÑ. Haz clic para ver todos los indicadores, votaciones y datos asociados.</p>
+      <p>Ficha de {tipo} en IAÑ. Haz clic para ver todos los indicadores, votaciones y datos asociados.</p>
     </div>
   );
 }
 
 function renderSourceCard(action: ChatAction) {
-  return <EmbeddedPage href="/sources" label={action.label} fallbackText="Fuente de datos en el inventario de IAPÑ." />;
+  return <EmbeddedPage href="/sources" label={action.label} fallbackText="Fuente de datos en el inventario de IAÑ." />;
 }
 
 function renderLinkCard(action: ChatAction) {

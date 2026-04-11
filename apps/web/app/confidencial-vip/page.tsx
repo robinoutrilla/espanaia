@@ -319,7 +319,7 @@ export default function ConfidencialVipPage() {
             </form>
 
             <p style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textAlign: "center", marginTop: "20px" }}>
-              IAPN — Unidad de Inteligencia Politica
+              IAN — Unidad de Inteligencia Politica
             </p>
           </div>
         </section>

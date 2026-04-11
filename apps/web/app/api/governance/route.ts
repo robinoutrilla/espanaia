@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { getGovernancePlan } from "../../../lib/iapn-governance";
+import { getGovernancePlan } from "../../../lib/ian-governance";
 import { nationalIndicators } from "../../../lib/ine-data";
 
 const MIROFISH_URL = process.env.MIROFISH_URL || "http://localhost:5001";

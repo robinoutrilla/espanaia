@@ -179,6 +179,22 @@ export interface WeeklyAlert {
   summary: string;
 }
 
+export interface PartyBreakdown {
+  party: string;
+  slug: string;
+  color: string;
+  counts: Record<CargoLevel, number>;
+  total: number;
+  keyFigures: string[];
+  powerIndex: number;
+}
+
+export interface ConnectionGroup {
+  label: string;
+  description: string;
+  members: { name: string; role: string; party: string; partyColor: string }[];
+}
+
 export interface CargosData {
   officials: CargoPublico[];
   recentChanges: CargoChange[];
@@ -189,6 +205,8 @@ export interface CargosData {
     recentChangesCount: number;
     avgTenureYears: number;
   };
+  parties: PartyBreakdown[];
+  connectionGroups: ConnectionGroup[];
   genderStats: GenderStats;
   tenureStats: TenureStats;
   ageStats: AgeStats;
@@ -2188,6 +2206,327 @@ const officials: CargoPublico[] = [
     homeCCAA: "Castilla y Leon",
     conflictFlags: ["Imputado por el Tribunal Supremo por revelacion de secretos (caso novio de Ayuso)"],
   },
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CCAA — Additional community presidents
+     ════════════════════════════════════════════════════════════════════════ */
+  {
+    id: "cp-adrian-barbon",
+    name: "Adrian Barbon Fernandez",
+    slug: "adrian-barbon",
+    currentRole: "Presidente del Principado de Asturias",
+    institution: "Gobierno del Principado de Asturias",
+    level: "ccaa",
+    party: "PSOE",
+    partySlug: "psoe",
+    territory: "Asturias",
+    since: "2019-07-17",
+    previousRoles: [
+      { role: "Portavoz del PSOE en la Junta General", institution: "Junta General del Principado", from: "2015-06-01", to: "2019-07-16" },
+    ],
+    activity: [
+      { id: "ab-a1", date: "2026-03-20", type: "declaracion", title: "Plan industrial asturiano", summary: "Presentacion del nuevo plan de reindustrializacion del Principado." },
+    ],
+    connections: [
+      { targetId: "cp-pedro-sanchez", type: "partido", label: "Presidente del Gobierno (PSOE)" },
+    ],
+    tags: ["presidente-ccaa", "psoe", "asturias"],
+    gender: "M",
+    birthYear: 1981,
+    education: { degree: "Licenciado en Derecho", institution: "Universidad de Oviedo" },
+    influenceScore: 38,
+    mediaExposure: 30,
+    appointmentType: "eleccion",
+    homeCCAA: "Asturias",
+  },
+  {
+    id: "cp-maria-chivite",
+    name: "Maria Chivite Navascues",
+    slug: "maria-chivite",
+    currentRole: "Presidenta del Gobierno de Navarra",
+    institution: "Gobierno de Navarra",
+    level: "ccaa",
+    party: "PSN/PSOE",
+    partySlug: "psoe",
+    territory: "Navarra",
+    since: "2019-08-06",
+    previousRoles: [
+      { role: "Portavoz del PSN en el Parlamento de Navarra", institution: "Parlamento de Navarra", from: "2015-07-01", to: "2019-08-05" },
+    ],
+    activity: [
+      { id: "mc-a1", date: "2026-03-15", type: "declaracion", title: "Acuerdo presupuestario", summary: "Firma del acuerdo presupuestario 2026 con Geroa Bai y Contigo-Zurekin." },
+    ],
+    connections: [
+      { targetId: "cp-pedro-sanchez", type: "partido", label: "Presidente del Gobierno (PSOE)" },
+    ],
+    tags: ["presidenta-ccaa", "psoe", "navarra"],
+    gender: "F",
+    birthYear: 1978,
+    education: { degree: "Licenciada en Derecho", institution: "Universidad de Navarra" },
+    influenceScore: 35,
+    mediaExposure: 25,
+    appointmentType: "eleccion",
+    homeCCAA: "Navarra",
+  },
+  {
+    id: "cp-emiliano-garcia-page",
+    name: "Emiliano Garcia-Page Sanchez",
+    slug: "emiliano-garcia-page",
+    currentRole: "Presidente de Castilla-La Mancha",
+    institution: "Junta de Comunidades de Castilla-La Mancha",
+    level: "ccaa",
+    party: "PSOE",
+    partySlug: "psoe",
+    territory: "Castilla-La Mancha",
+    since: "2015-07-09",
+    previousRoles: [
+      { role: "Alcalde de Toledo", institution: "Ayuntamiento de Toledo", from: "1999-06-01", to: "2015-07-08" },
+    ],
+    activity: [
+      { id: "egp-a1", date: "2026-03-10", type: "declaracion", title: "Trasvase Tajo-Segura", summary: "Critica publica al recorte del trasvase Tajo-Segura." },
+    ],
+    connections: [
+      { targetId: "cp-pedro-sanchez", type: "partido", label: "Presidente del Gobierno (PSOE)" },
+    ],
+    tags: ["presidente-ccaa", "psoe", "castilla-la-mancha"],
+    gender: "M",
+    birthYear: 1968,
+    education: { degree: "Licenciado en Derecho", institution: "Universidad de Castilla-La Mancha" },
+    influenceScore: 42,
+    mediaExposure: 38,
+    appointmentType: "eleccion",
+    homeCCAA: "Castilla-La Mancha",
+  },
+  {
+    id: "cp-maria-guardiola",
+    name: "Maria Guardiola Martin",
+    slug: "maria-guardiola",
+    currentRole: "Presidenta de la Junta de Extremadura",
+    institution: "Junta de Extremadura",
+    level: "ccaa",
+    party: "PP",
+    partySlug: "pp",
+    territory: "Extremadura",
+    since: "2023-07-12",
+    previousRoles: [
+      { role: "Senadora por Caceres", institution: "Senado", from: "2019-01-01", to: "2023-07-11" },
+    ],
+    activity: [
+      { id: "mg-a1", date: "2026-03-05", type: "declaracion", title: "Plan de empleo rural", summary: "Presentacion del plan contra la despoblacion en Extremadura." },
+    ],
+    connections: [
+      { targetId: "cp-miguel-tellado", type: "partido", label: "Portavoz PP en Congreso" },
+    ],
+    tags: ["presidenta-ccaa", "pp", "extremadura"],
+    gender: "F",
+    birthYear: 1981,
+    education: { degree: "Licenciada en Farmacia", institution: "Universidad de Salamanca" },
+    influenceScore: 33,
+    mediaExposure: 28,
+    appointmentType: "eleccion",
+    homeCCAA: "Extremadura",
+  },
+  {
+    id: "cp-gonzalo-capellan",
+    name: "Gonzalo Capellan de Miguel",
+    slug: "gonzalo-capellan",
+    currentRole: "Presidente del Gobierno de La Rioja",
+    institution: "Gobierno de La Rioja",
+    level: "ccaa",
+    party: "PP",
+    partySlug: "pp",
+    territory: "La Rioja",
+    since: "2023-07-13",
+    previousRoles: [
+      { role: "Director de la UNED", institution: "UNED", from: "2020-01-01", to: "2023-07-12" },
+    ],
+    activity: [
+      { id: "gc-a1", date: "2026-03-01", type: "declaracion", title: "Reforma fiscal", summary: "Rebaja del IRPF autonómico en La Rioja." },
+    ],
+    connections: [
+      { targetId: "cp-miguel-tellado", type: "partido", label: "Portavoz PP en Congreso" },
+    ],
+    tags: ["presidente-ccaa", "pp", "la-rioja"],
+    gender: "M",
+    birthYear: 1969,
+    education: { degree: "Doctor en Historia", institution: "Universidad de La Rioja" },
+    influenceScore: 25,
+    mediaExposure: 18,
+    appointmentType: "eleccion",
+    homeCCAA: "La Rioja",
+  },
+  {
+    id: "cp-fernando-lopez-miras",
+    name: "Fernando Lopez Miras",
+    slug: "fernando-lopez-miras",
+    currentRole: "Presidente de la Region de Murcia",
+    institution: "Comunidad Autonoma de la Region de Murcia",
+    level: "ccaa",
+    party: "PP",
+    partySlug: "pp",
+    territory: "Murcia",
+    since: "2017-04-27",
+    previousRoles: [
+      { role: "Vicepresidente de la Region de Murcia", institution: "Gobierno de Murcia", from: "2015-07-01", to: "2017-04-26" },
+    ],
+    activity: [
+      { id: "flm-a1", date: "2026-03-12", type: "declaracion", title: "Mar Menor", summary: "Plan de regeneracion integral del Mar Menor." },
+    ],
+    connections: [
+      { targetId: "cp-miguel-tellado", type: "partido", label: "Portavoz PP en Congreso" },
+    ],
+    tags: ["presidente-ccaa", "pp", "murcia"],
+    gender: "M",
+    birthYear: 1984,
+    education: { degree: "Licenciado en Farmacia", institution: "Universidad de Murcia" },
+    influenceScore: 35,
+    mediaExposure: 28,
+    appointmentType: "eleccion",
+    homeCCAA: "Murcia",
+  },
+  {
+    id: "cp-miguel-bueno",
+    name: "Miguel Angel Revilla Roiz",
+    slug: "miguel-angel-revilla",
+    currentRole: "Presidente de Cantabria (saliente)",
+    institution: "Gobierno de Cantabria",
+    level: "ccaa",
+    party: "PRC",
+    partySlug: "prc",
+    territory: "Cantabria",
+    since: "2019-06-25",
+    previousRoles: [
+      { role: "Presidente de Cantabria", institution: "Gobierno de Cantabria", from: "2003-07-01", to: "2011-06-23" },
+    ],
+    activity: [
+      { id: "mar-a1", date: "2026-02-20", type: "declaracion", title: "Turismo sostenible", summary: "Lanzamiento del plan de turismo sostenible cantabro." },
+    ],
+    connections: [],
+    tags: ["presidente-ccaa", "prc", "cantabria"],
+    gender: "M",
+    birthYear: 1943,
+    education: { degree: "Licenciado en Ciencias Economicas", institution: "Universidad de Bilbao" },
+    influenceScore: 30,
+    mediaExposure: 45,
+    appointmentType: "eleccion",
+    homeCCAA: "Cantabria",
+  },
+  {
+    id: "cp-ana-oramas",
+    name: "Ana Oramas Gonzalez-Moro",
+    slug: "ana-oramas",
+    currentRole: "Diputada por Santa Cruz de Tenerife",
+    institution: "Congreso de los Diputados",
+    level: "congreso",
+    party: "Coalicion Canaria",
+    partySlug: "coalicion-canaria",
+    territory: "Canarias",
+    since: "2007-04-01",
+    previousRoles: [
+      { role: "Alcaldesa de Santa Cruz de Tenerife", institution: "Ayuntamiento de Santa Cruz de Tenerife", from: "1999-06-01", to: "2007-03-31" },
+    ],
+    activity: [
+      { id: "ao-a1", date: "2026-04-02", type: "intervencion", title: "Defensa de Canarias", summary: "Intervencion sobre la financiacion del REF canario." },
+    ],
+    connections: [
+      { targetId: "cp-fernando-clavijo", type: "partido", label: "Presidente de Canarias (CC)" },
+    ],
+    tags: ["diputada", "coalicion-canaria", "canarias", "congreso"],
+    gender: "F",
+    birthYear: 1959,
+    education: { degree: "Licenciada en Ciencias Economicas", institution: "Universidad de La Laguna" },
+    influenceScore: 32,
+    mediaExposure: 30,
+    appointmentType: "eleccion",
+    homeCCAA: "Canarias",
+  },
+  {
+    id: "cp-alberto-nunez-feijoo",
+    name: "Alberto Nunez Feijoo",
+    slug: "alberto-nunez-feijoo",
+    currentRole: "Presidente del Partido Popular / Lider de la oposicion",
+    institution: "Partido Popular",
+    level: "congreso",
+    party: "PP",
+    partySlug: "pp",
+    territory: "Galicia",
+    since: "2022-04-02",
+    previousRoles: [
+      { role: "Presidente de la Xunta de Galicia", institution: "Xunta de Galicia", from: "2009-04-01", to: "2022-03-31" },
+      { role: "Conselleiro de Politica Territorial", institution: "Xunta de Galicia", from: "2003-08-01", to: "2005-07-31" },
+    ],
+    activity: [
+      { id: "anf-a1", date: "2026-04-09", type: "intervencion", title: "Mocion de politica general", summary: "Intervencion critica contra el Gobierno en el debate de politica general." },
+      { id: "anf-a2", date: "2026-03-25", type: "declaracion", title: "Pacto educativo", summary: "Propuesta de un gran pacto nacional por la educacion." },
+    ],
+    connections: [
+      { targetId: "cp-miguel-tellado", type: "partido", label: "Portavoz PP en Congreso" },
+      { targetId: "cp-isabel-diaz-ayuso", type: "partido", label: "Presidenta de la Com. de Madrid" },
+    ],
+    tags: ["lider-oposicion", "pp", "congreso", "presidente-pp"],
+    gender: "M",
+    birthYear: 1961,
+    education: { degree: "Licenciado en Derecho", institution: "Universidad de Santiago de Compostela" },
+    influenceScore: 88,
+    mediaExposure: 85,
+    appointmentType: "eleccion",
+    homeCCAA: "Galicia",
+  },
+  {
+    id: "cp-nestor-rego",
+    name: "Nestor Rego Candamil",
+    slug: "nestor-rego",
+    currentRole: "Diputado por A Coruna (portavoz BNG)",
+    institution: "Congreso de los Diputados",
+    level: "congreso",
+    party: "BNG",
+    partySlug: "bng",
+    territory: "Galicia",
+    since: "2019-12-01",
+    previousRoles: [],
+    activity: [
+      { id: "nr-a1", date: "2026-03-18", type: "intervencion", title: "Debate sobre industria naval", summary: "Defensa de la industria naval gallega en el Congreso." },
+    ],
+    connections: [],
+    tags: ["diputado", "bng", "galicia", "congreso"],
+    gender: "M",
+    birthYear: 1976,
+    education: { degree: "Licenciado en Derecho", institution: "Universidade da Coruna" },
+    influenceScore: 22,
+    mediaExposure: 18,
+    appointmentType: "eleccion",
+    homeCCAA: "Galicia",
+  },
+  {
+    id: "cp-cristina-valido",
+    name: "Cristina Valido Garcia",
+    slug: "cristina-valido",
+    currentRole: "Diputada por Las Palmas (CC)",
+    institution: "Congreso de los Diputados",
+    level: "congreso",
+    party: "Coalicion Canaria",
+    partySlug: "coalicion-canaria",
+    territory: "Canarias",
+    since: "2023-11-01",
+    previousRoles: [
+      { role: "Consejera de Empleo del Gobierno de Canarias", institution: "Gobierno de Canarias", from: "2019-07-01", to: "2023-10-31" },
+    ],
+    activity: [
+      { id: "cv-a1", date: "2026-03-25", type: "intervencion", title: "Pacto migratorio", summary: "Negociacion del reparto de menores migrantes no acompanados." },
+    ],
+    connections: [
+      { targetId: "cp-fernando-clavijo", type: "partido", label: "Presidente de Canarias (CC)" },
+      { targetId: "cp-ana-oramas", type: "partido", label: "Diputada CC por Tenerife" },
+    ],
+    tags: ["diputada", "coalicion-canaria", "canarias", "congreso"],
+    gender: "F",
+    birthYear: 1971,
+    education: { degree: "Licenciada en Derecho", institution: "Universidad de Las Palmas de Gran Canaria" },
+    influenceScore: 28,
+    mediaExposure: 22,
+    appointmentType: "eleccion",
+    homeCCAA: "Canarias",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -2566,6 +2905,124 @@ export function buildCargosData(): CargosData {
     .map(([degree, count]) => ({ degree, count }))
     .sort((a, b) => b.count - a.count);
 
+  // ── Party breakdown for "Partidos" tab ──
+  const PARTY_COLORS: Record<string, string> = {
+    "PSOE": "#E30613",
+    "PSC/PSOE": "#E30613",
+    "PSN/PSOE": "#E30613",
+    "PP": "#0055A4",
+    "VOX": "#63BE21",
+    "Sumar": "#E6007E",
+    "Sumar/Comuns": "#E6007E",
+    "Mas Madrid/Sumar": "#E6007E",
+    "Podemos": "#6B2F6B",
+    "ERC": "#FFB232",
+    "Junts": "#00C3B2",
+    "PNV": "#E30613",
+    "EH Bildu": "#A3C940",
+    "BNG": "#76B3E1",
+    "Coalicion Canaria": "#FFD700",
+    "PRC": "#006847",
+    "Geroa Bai": "#5A8D41",
+    "Independiente": "#6b7280",
+  };
+
+  const partyBreakdownMap = new Map<string, { slug: string; color: string; counts: Record<CargoLevel, number>; total: number; keyFigures: string[]; totalInfluence: number }>();
+  for (const o of officials) {
+    const p = o.party ?? "Independiente";
+    if (!partyBreakdownMap.has(p)) {
+      const pslug = o.partySlug ?? p.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      partyBreakdownMap.set(p, {
+        slug: pslug,
+        color: PARTY_COLORS[p] ?? "#6b7280",
+        counts: { gobierno: 0, congreso: 0, senado: 0, ccaa: 0, ayuntamiento: 0, europa: 0, organismo: 0 },
+        total: 0,
+        keyFigures: [],
+        totalInfluence: 0,
+      });
+    }
+    const entry = partyBreakdownMap.get(p)!;
+    entry.counts[o.level]++;
+    entry.total++;
+    entry.totalInfluence += o.influenceScore;
+    if (o.influenceScore >= 50) entry.keyFigures.push(o.name);
+  }
+  // Compute power index (0-100) based on weighted presence across levels
+  const maxTotalInfluence = Math.max(...Array.from(partyBreakdownMap.values()).map((v) => v.totalInfluence), 1);
+  const partiesData: PartyBreakdown[] = Array.from(partyBreakdownMap.entries())
+    .map(([party, v]) => ({
+      party,
+      slug: v.slug,
+      color: v.color,
+      counts: v.counts,
+      total: v.total,
+      keyFigures: v.keyFigures.slice(0, 5),
+      powerIndex: Math.round((v.totalInfluence / maxTotalInfluence) * 100),
+    }))
+    .sort((a, b) => b.powerIndex - a.powerIndex);
+
+  // ── Connection groups for "Red de conexiones" tab ──
+  const getColor = (party?: string) => PARTY_COLORS[party ?? "Independiente"] ?? "#6b7280";
+
+  const connectionGroups: ConnectionGroup[] = [
+    {
+      label: "Nucleo de Moncloa",
+      description: "Circulo de confianza del Presidente del Gobierno: vicepresidencia, portavoz y principales ministerios estrategicos.",
+      members: officials
+        .filter((o) => o.level === "gobierno" && o.influenceScore >= 70)
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Bloque de la oposicion (PP-VOX)",
+      description: "Principales actores de la oposicion parlamentaria de centroderecha y derecha.",
+      members: officials
+        .filter((o) => (o.party === "PP" || o.party === "VOX") && o.influenceScore >= 30)
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Eje soberanista catalan",
+      description: "Partidos catalanes con presencia en el Congreso y las instituciones catalanas: ERC y Junts.",
+      members: officials
+        .filter((o) => o.party === "ERC" || o.party === "Junts" || o.party === "PSC/PSOE")
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Eje vasco-navarro",
+      description: "Partidos vascos y navarros con influencia en la gobernabilidad estatal: PNV, EH Bildu y Geroa Bai.",
+      members: officials
+        .filter((o) => o.party === "PNV" || o.party === "EH Bildu" || o.party === "Geroa Bai" || (o.party === "PSN/PSOE"))
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Coalicion de gobierno (PSOE-Sumar)",
+      description: "Ministros y cargos de la coalicion de gobierno entre PSOE y Sumar, incluidas sus marcas territoriales.",
+      members: officials
+        .filter((o) => o.level === "gobierno" && (o.partySlug === "psoe" || o.partySlug === "sumar") && o.influenceScore >= 40)
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Presidentes autonomicos del PP",
+      description: "Red de presidentes de comunidades autonomas del Partido Popular, principal contrapoder territorial al Gobierno central.",
+      members: officials
+        .filter((o) => o.level === "ccaa" && (o.party === "PP"))
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Bloque canario-insular",
+      description: "Actores de Coalicion Canaria con influencia en la gobernabilidad estatal desde las islas.",
+      members: officials
+        .filter((o) => o.party === "Coalicion Canaria" || (o.territory === "Canarias" && o.party !== "PP" && o.party !== "PSOE"))
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+    {
+      label: "Instituciones de control y regulacion",
+      description: "Responsables de organismos reguladores independientes, fiscalia, banco central y agencias clave.",
+      members: officials
+        .filter((o) => o.level === "organismo")
+        .map((o) => ({ name: o.name, role: o.currentRole, party: o.party ?? "Independiente", partyColor: getColor(o.party) })),
+    },
+  ];
+
   return {
     officials,
     recentChanges,
@@ -2576,6 +3033,8 @@ export function buildCargosData(): CargosData {
       recentChangesCount: recentChanges.length,
       avgTenureYears,
     },
+    parties: partiesData,
+    connectionGroups,
     genderStats,
     tenureStats,
     ageStats,

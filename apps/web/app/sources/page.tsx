@@ -146,7 +146,7 @@ export default function SourcesPage() {
           <div className="detail-copy">
             <span className="eyebrow">Registro completo de fuentes oficiales</span>
             <h1 className="detail-title">
-              Todas las fuentes públicas que alimentan IAPÑ
+              Todas las fuentes públicas que alimentan IAÑ
             </h1>
             <p className="detail-description">
               Directorio de {totalSources} fuentes oficiales organizadas por nivel de gobierno:

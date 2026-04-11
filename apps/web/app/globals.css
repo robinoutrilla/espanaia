@@ -11506,7 +11506,7 @@ a:hover { color: var(--link); }
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   EL PERIÓDICO DE IAPÑ — Newspaper styles
+   EL PERIÓDICO DE IAÑ — Newspaper styles
    ════════════════════════════════════════════════════════════════════════════ */
 
 /* ── Typography ── */
@@ -11720,7 +11720,7 @@ a:hover { color: var(--link); }
 }
 .np-article-body p { margin-bottom: 16px; }
 
-/* ── Proposal box (PROPUESTA IAPÑ) ── */
+/* ── Proposal box (PROPUESTA IAÑ) ── */
 .np-proposal-box {
   margin: 28px 0; padding: 20px 24px; border-left: 4px solid var(--oro);
   background: linear-gradient(135deg, rgba(255,219,0,0.06), rgba(255,219,0,0.02));

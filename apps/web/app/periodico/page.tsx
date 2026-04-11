@@ -10,7 +10,7 @@ interface NewsArticle {
   id: string; headline: string; subheadline: string;
   category: "politica" | "economia" | "sociedad" | "europa" | "tecnologia" | "territorio";
   date: string; author: string; summary: string; body: string[];
-  iapnProposal: string; iapnQuote: string;
+  ianProposal: string; ianQuote: string;
   blockers: { actor: string; reason: string; severity: "alto" | "medio" | "bajo" }[];
   partyReactions: { party: string; color: string; position: "a-favor" | "en-contra" | "abstención" | "dividido"; statement: string; probabilityAgree: number }[];
   benefitScore: number; benefitAnalysis: string;
@@ -200,12 +200,12 @@ function ArticleDetail({ article, articles, onBack, onNavigate }: { article: New
         ))}
       </div>
 
-      {/* PROPUESTA IAPÑ */}
+      {/* PROPUESTA IAÑ */}
       <div className="np-proposal-box">
-        <div className="np-proposal-label">PROPUESTA IAPÑ</div>
-        <p className="np-proposal-text">{article.iapnProposal}</p>
-        <blockquote className="np-proposal-quote">"{article.iapnQuote}"</blockquote>
-        <p className="np-proposal-disclaimer">Posición del Partido IAPÑ — claramente identificada como propuesta de partido</p>
+        <div className="np-proposal-label">PROPUESTA IAÑ</div>
+        <p className="np-proposal-text">{article.ianProposal}</p>
+        <blockquote className="np-proposal-quote">"{article.ianQuote}"</blockquote>
+        <p className="np-proposal-disclaimer">Posición del Partido IAÑ — claramente identificada como propuesta de partido</p>
       </div>
 
       {/* BLOQUEOS */}
@@ -524,7 +524,7 @@ export default function PeriodicoPage() {
       <div className="np-masthead">
         <div className="np-masthead-inner">
           <div className="np-masthead-date">{formatMastheadDate()}</div>
-          <h1 className="np-masthead-title">EL PERIÓDICO DE IAPÑ</h1>
+          <h1 className="np-masthead-title">EL PERIÓDICO DE IAÑ</h1>
           <p className="np-masthead-tagline">Datos, no ideología. Soluciones, no promesas.</p>
           <div className="np-masthead-rule" />
         </div>

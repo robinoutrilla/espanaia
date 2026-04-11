@@ -28,7 +28,7 @@ const es = {
     sources: "Fuentes",
     media: "Medios",
     predictions: "Predicciones",
-    partidoIapn: "Partido IAPÑ",
+    partidoIan: "Partido IAÑ",
     research: "Investigar",
   },
   // Common UI
@@ -344,7 +344,7 @@ const ca: Translations = {
     sources: "Fonts",
     media: "Mitjans",
     predictions: "Prediccions",
-    partidoIapn: "Partit IAPÑ",
+    partidoIan: "Partit IAÑ",
     research: "Investigar",
   },
   common: {
@@ -647,7 +647,7 @@ const gl: Translations = {
     sources: "Fontes",
     media: "Medios",
     predictions: "Predicións",
-    partidoIapn: "Partido IAPÑ",
+    partidoIan: "Partido IAÑ",
     research: "Investigar",
   },
   common: {
@@ -753,7 +753,7 @@ const eu: Translations = {
     sources: "Iturriak",
     media: "Hedabideak",
     predictions: "Iragarpenak",
-    partidoIapn: "IAPÑ Alderdia",
+    partidoIan: "IAÑ Alderdia",
     research: "Ikertu",
   },
   common: {
@@ -867,7 +867,7 @@ const ast: Translations = {
     sources: "Fontes",
     media: "Medios",
     predictions: "Predicciones",
-    partidoIapn: "Partíu IAPÑ",
+    partidoIan: "Partíu IAÑ",
     research: "Investigar",
   },
   common: { ...es.common, live: "EN DIREUTU", back: "Tornar", nationalNav: "Navegación principal" },
@@ -907,7 +907,7 @@ const oc: Translations = {
     sources: "Fonts",
     media: "Mièges",
     predictions: "Prediccions",
-    partidoIapn: "Partit IAPÑ",
+    partidoIan: "Partit IAÑ",
     research: "Investigar",
   },
   common: { ...ca.common, live: "EN DIRÈCTE" },

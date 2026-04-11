@@ -10,7 +10,7 @@ export function SiteFooter({ sources, extra }: SiteFooterProps) {
       <div>
         <p className="page-footer-brand">IAP{"Ñ"}.com</p>
         <p className="page-footer-sub">Inteligencia Abierta para Espa{"ñ"}a</p>
-        <p className="page-footer-copy">&copy; {year} IAPN &middot; Datos abiertos &middot; Sin cookies de terceros</p>
+        <p className="page-footer-copy">&copy; {year} IAN &middot; Datos abiertos &middot; Sin cookies de terceros</p>
       </div>
       {(sources || extra) && (
         <div>

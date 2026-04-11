@@ -6,7 +6,7 @@ import { SiteHeader } from "../../components/site-header";
 import { SiteFooter } from "../../components/site-footer";
 import { SectionHeading } from "../../components/section-heading";
 import { MirofishStatus } from "../../components/mirofish-status";
-import type { GovernancePlan } from "../../lib/iapn-governance";
+import type { GovernancePlan } from "../../lib/ian-governance";
 
 interface AiPolicy {
   area: string;
@@ -28,7 +28,7 @@ interface GovernanceResponse {
   aiPolicies: {
     policies: AiPolicy[];
     governmentCritique: string;
-    iapnAdvantage: string;
+    ianAdvantage: string;
   } | null;
 }
 
@@ -38,7 +38,7 @@ const severityColor = (s: string) =>
 const severityLabel = (s: string) =>
   s === "critical" ? "CRITICO" : s === "high" ? "ALTO" : s === "medium" ? "MEDIO" : "BAJO";
 
-export default function PartidoIAPNPage() {
+export default function PartidoIANPage() {
   const [data, setData] = useState<GovernanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedLaw, setExpandedLaw] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export default function PartidoIAPNPage() {
       .then((d) => {
         setData(d);
         // Cache in sessionStorage for same-session reloads
-        try { sessionStorage.setItem("iapn-governance", JSON.stringify(d)); } catch {}
+        try { sessionStorage.setItem("ian-governance", JSON.stringify(d)); } catch {}
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -59,7 +59,7 @@ export default function PartidoIAPNPage() {
   useEffect(() => {
     // Try sessionStorage first for instant reload
     try {
-      const cached = sessionStorage.getItem("iapn-governance");
+      const cached = sessionStorage.getItem("ian-governance");
       if (cached) {
         setData(JSON.parse(cached));
         setLoading(false);
@@ -76,14 +76,14 @@ export default function PartidoIAPNPage() {
     <main className="page-shell detail-page">
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
-      <SiteHeader currentSection="partido-iapn" />
+      <SiteHeader currentSection="partido-ian" />
 
       {/* ── Hero ── */}
       <section className="panel detail-hero">
         <div className="detail-hero-grid">
           <div className="detail-copy">
             <span className="eyebrow">LABORATORIO POLITICO</span>
-            <h1 className="detail-title">Partido IAPN</h1>
+            <h1 className="detail-title">Partido IAN</h1>
             <p className="detail-description">
               Simulador de gobernanza: un partido ficticio basado en datos que resuelve
               los problemas reales de Espana. Sin ideologia, solo evidencia.
@@ -91,7 +91,7 @@ export default function PartidoIAPNPage() {
             <MirofishStatus />
             <button
               className="hero-button hero-button-secondary"
-              onClick={() => { sessionStorage.removeItem("iapn-governance"); loadData(); }}
+              onClick={() => { sessionStorage.removeItem("ian-governance"); loadData(); }}
               disabled={loading}
               style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.82rem" }}
             >
@@ -384,7 +384,7 @@ export default function PartidoIAPNPage() {
               <SectionHeading
                 eyebrow="Analisis IA (MiroFish local)"
                 title="Propuestas generadas por inteligencia artificial"
-                description={ai.iapnAdvantage || "Politicas generadas localmente con Ollama. Sin envio de datos a APIs externas."}
+                description={ai.ianAdvantage || "Politicas generadas localmente con Ollama. Sin envio de datos a APIs externas."}
               />
 
               {ai.governmentCritique && (
@@ -518,7 +518,7 @@ export default function PartidoIAPNPage() {
         </>
       )}
 
-      <SiteFooter extra="Simulador basado en datos reales. IAPN es un partido ficticio con fines educativos." />
+      <SiteFooter extra="Simulador basado en datos reales. IAN es un partido ficticio con fines educativos." />
     </main>
   );
 }

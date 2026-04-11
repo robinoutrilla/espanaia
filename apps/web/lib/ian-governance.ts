@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   IAPÑ Governance Simulator — aggregates every data layer into a
+   IAÑ Governance Simulator — aggregates every data layer into a
    coherent diagnosis + action plan for an ideal party that would:
    1. Win the next election with broad consensus
    2. Make all Spaniards happy regardless of origin
@@ -327,7 +327,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "Reducir el paro del 11,2% al 7% supondría 1,1M de nuevos cotizantes a la Seguridad Social, +8.800M€ en recaudación anual y una caída del gasto en prestaciones de desempleo de 5.200M€.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Pilar central del programa: datos demuestran que el empleo activo es más eficiente que los subsidios pasivos" },
+          { party: "IAÑ", reason: "Pilar central del programa: datos demuestran que el empleo activo es más eficiente que los subsidios pasivos" },
           { party: "PSOE", reason: "Alineado con su agenda social y el refuerzo del Estado del bienestar. El empleo público transitorio complementa sus políticas de protección" },
           { party: "Sumar", reason: "Propuesta coherente con su programa de garantía de empleo y derechos laborales. Encaja en su modelo de Estado inversor" },
         ],
@@ -359,7 +359,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "España podría ejecutar el 100% de los fondos NGEU (actualmente al 53%) sin presión fiscal adicional. Cada punto porcentual de inversión pública bien ejecutada genera 0,8-1,2 puntos de crecimiento del PIB.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "El marco fiscal actual impide inversiones con retorno positivo demostrado. Los datos muestran que la austeridad extrema reduce el crecimiento" },
+          { party: "IAÑ", reason: "El marco fiscal actual impide inversiones con retorno positivo demostrado. Los datos muestran que la austeridad extrema reduce el crecimiento" },
           { party: "PSOE", reason: "Lleva años pidiendo flexibilidad fiscal para inversión. Alineado con la posición española en el Consejo Europeo" },
           { party: "Sumar", reason: "Defiende la inversión pública como motor de crecimiento. Considera la austeridad una política fallida" },
           { party: "PNV", reason: "Interesado en que la inversión pública llegue al País Vasco. Pragmáticos sobre política fiscal" },
@@ -393,7 +393,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "La transparencia reduce la prima de riesgo y mejora la imagen de España ante inversores y organismos internacionales. Cada punto de mejora en transparencia se correlaciona con +0,3% de inversión extranjera.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Es la esencia del partido: gobernar con datos abiertos. Sin transparencia no hay democracia informada" },
+          { party: "IAÑ", reason: "Es la esencia del partido: gobernar con datos abiertos. Sin transparencia no hay democracia informada" },
           { party: "Sumar", reason: "Fuerte defensor de la rendición de cuentas. Ha propuesto medidas similares en su programa" },
           { party: "ERC", reason: "Apoya la transparencia como herramienta de control al gobierno central. Quiere que se aplique también a la distribución territorial de fondos" },
           { party: "BNG", reason: "Interesado en visibilizar las asimetrías de inversión entre territorios" },
@@ -424,7 +424,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "Reducir las brechas territoriales aumenta el PIB nacional un 0,5-1% anual (cada CCAA que pasa de rojo a amarillo aporta productividad). España necesita todos sus territorios funcionando para competir en la UE.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Los datos muestran que la brecha territorial es insostenible. 8 CCAA en rojo significan millones de ciudadanos sin igualdad de oportunidades" },
+          { party: "IAÑ", reason: "Los datos muestran que la brecha territorial es insostenible. 8 CCAA en rojo significan millones de ciudadanos sin igualdad de oportunidades" },
           { party: "PSOE", reason: "La cohesión territorial es uno de sus ejes históricos. Gobiernan en varias CCAA receptoras" },
           { party: "Sumar", reason: "Defiende la igualdad de servicios públicos independientemente del territorio" },
           { party: "BNG", reason: "Galicia es territorio en amarillo — se beneficiaría directamente del fondo" },
@@ -456,7 +456,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "España tiene 3,4M de viviendas vacías y una crisis de acceso brutal. Resolver la vivienda libera renta disponible que se reinvierte en consumo, estimulando la economía. Impacto estimado: +0,8% PIB.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Los datos son claros: 45% de renta destinada a vivienda es insostenible. La intervención regulada con incentivos es la vía equilibrada" },
+          { party: "IAÑ", reason: "Los datos son claros: 45% de renta destinada a vivienda es insostenible. La intervención regulada con incentivos es la vía equilibrada" },
           { party: "PSOE", reason: "Ya aprobó la Ley de Vivienda 2023. Esta reforma profundiza en la misma línea" },
           { party: "Sumar", reason: "La vivienda es su prioridad número uno. Defiende topes más estrictos incluso" },
           { party: "ERC", reason: "Cataluña sufre especialmente la crisis de vivienda. Apoyará cualquier medida que frene los alquileres" },
@@ -490,7 +490,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "Ejecutar el 100% de los fondos NGEU supondría inyectar 76.600M€ adicionales en la economía española. Impacto estimado: +2,5% PIB acumulado y 400.000 empleos directos e indirectos.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Solo el 53% ejecutado es un dato alarmante. Cada euro no gastado es una oportunidad perdida medible" },
+          { party: "IAÑ", reason: "Solo el 53% ejecutado es un dato alarmante. Cada euro no gastado es una oportunidad perdida medible" },
           { party: "PP", reason: "Ha criticado constantemente la lentitud de ejecución del gobierno. No puede oponerse a acelerar lo que denuncia" },
           { party: "PSOE", reason: "Necesita demostrar que los fondos se ejecutan. Esta ley le da herramientas para presionar a sus propios ministerios" },
           { party: "Sumar", reason: "Los fondos financian transición ecológica y digital, dos de sus prioridades programáticas" },
@@ -522,7 +522,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "Reducir el fraude fiscal al nivel medio europeo supondría 15-20.000M€ adicionales anuales. España pasaría de un déficit del 3,2% a un déficit inferior al 1% del PIB sin tocar ningún servicio público.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "Los datos son irrefutables: 70.000M€ de fraude es el mayor problema fiscal de España. No se puede pedir austeridad sin perseguir el fraude" },
+          { party: "IAÑ", reason: "Los datos son irrefutables: 70.000M€ de fraude es el mayor problema fiscal de España. No se puede pedir austeridad sin perseguir el fraude" },
           { party: "PSOE", reason: "Ha legislado contra el fraude fiscal en las últimas legislaturas. Coherente con su discurso de justicia fiscal" },
           { party: "Sumar", reason: "Prioridad absoluta en su programa. Defiende que los ricos paguen lo que les corresponde" },
           { party: "ERC", reason: "Apoya la recaudación eficiente como vía para mejorar la financiación autonómica" },
@@ -555,7 +555,7 @@ function buildLegislativeAgenda(): GovernancePlan["legislativeAgenda"] {
       spainBenefit: "Alcanzar el 3% del PIB en I+D posicionaría a España como hub tecnológico europeo. Cada punto de inversión en I+D genera 2,5 puntos de crecimiento del PIB a medio plazo. Impacto estimado: +45.000M€ en PIB en 10 años.",
       expectedVotes: {
         favor: [
-          { party: "IAPÑ", reason: "La brecha de I+D es uno de los mayores lastres competitivos de España según los datos Eurostat" },
+          { party: "IAÑ", reason: "La brecha de I+D es uno de los mayores lastres competitivos de España según los datos Eurostat" },
           { party: "PP", reason: "Defiende la reindustrialización y la competitividad. Apoyo natural a incentivos empresariales y tecnológicos" },
           { party: "PSOE", reason: "La España del conocimiento es un eje de su discurso. Compatible con su estrategia de transformación productiva" },
           { party: "Sumar", reason: "Apoya la inversión pública en I+D como creación de empleo de calidad y soberanía tecnológica" },

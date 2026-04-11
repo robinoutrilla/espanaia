@@ -6,7 +6,7 @@ import { useLang } from "../lib/i18n/context";
 import type { Translations } from "../lib/i18n/translations";
 
 interface SiteHeaderProps {
-  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-iapn" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip" | "confidencial" | "borrador-check" | "programas";
+  currentSection?: "home" | "territories" | "parties" | "politicians" | "agenda" | "finanzas" | "votaciones" | "indicadores" | "contratacion" | "europa" | "transparencia" | "sources" | "research" | "medios" | "predicciones" | "partido-ian" | "terminal" | "inteligencia" | "benchmark" | "decisiones" | "ministerios" | "radar-regulatorio" | "subvenciones" | "sales-intelligence" | "scoring-riesgo" | "asistente" | "cargos-publicos" | "educacion" | "periodico" | "constitucion-viva" | "political-twin" | "simulador" | "next-gen" | "signal-engine" | "mis-impuestos" | "confidencial-vip" | "confidencial" | "borrador-check" | "programas";
 }
 
 type NavKey = keyof Translations["nav"];
@@ -319,10 +319,10 @@ export function SiteHeader({ currentSection = "home" }: SiteHeaderProps) {
           Periódico
         </Link>
         <Link
-          className={`nav-link-radar ${currentSection === "partido-iapn" ? "nav-link-radar-active" : ""}`}
-          href="/partido-iapn"
+          className={`nav-link-radar ${currentSection === "partido-ian" ? "nav-link-radar-active" : ""}`}
+          href="/partido-ian"
         >
-          Partido IAP{"Ñ"}
+          Partido IA{"Ñ"}
         </Link>
       </nav>
 
@@ -357,11 +357,11 @@ export function SiteHeader({ currentSection = "home" }: SiteHeaderProps) {
           Periódico
         </Link>
         <Link
-          className={`mobile-nav-link mobile-nav-link-top ${currentSection === "partido-iapn" ? "mobile-nav-link-active" : ""}`}
-          href="/partido-iapn"
+          className={`mobile-nav-link mobile-nav-link-top ${currentSection === "partido-ian" ? "mobile-nav-link-active" : ""}`}
+          href="/partido-ian"
           onClick={closeMobile}
         >
-          Partido IAP{"Ñ"}
+          Partido IA{"Ñ"}
         </Link>
       </nav>
     </header>

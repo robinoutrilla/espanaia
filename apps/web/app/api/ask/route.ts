@@ -96,7 +96,7 @@ export async function POST(request: Request) {
           });
 
           const systemPrompt = [
-            "Eres un analista político experto en España que trabaja en IAPÑ.com, la plataforma de inteligencia política abierta.",
+            "Eres un analista político experto en España que trabaja en IAÑ.com, la plataforma de inteligencia política abierta.",
             "Responde SIEMPRE en español, de forma concisa y rigurosa.",
             "Cita fuentes del contexto proporcionado. No inventes datos.",
             "Si el contexto no contiene información suficiente, dilo claramente.",

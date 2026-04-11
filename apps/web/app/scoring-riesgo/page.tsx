@@ -117,14 +117,16 @@ export default function ScoringRiesgoPage() {
 
   useEffect(() => {
     try {
-      const cached = sessionStorage.getItem("sr-data-v2");
-      if (cached) { const p = JSON.parse(cached); if (p.national) { setData(p); setLoading(false); } }
+      const cached = sessionStorage.getItem("sr-data-v3");
+      if (cached) { const p = JSON.parse(cached); if (p.national && p.territories?.[0]?.name) { setData(p); setLoading(false); } }
     } catch {}
     fetch("/api/scoring-riesgo")
       .then((r) => r.json())
       .then((raw) => {
-        // Normalize API shape: nationalScore → national, sector flat → nested components
+        // Normalize API shape to match page interfaces
         const d = { ...raw } as any;
+
+        // nationalScore → national
         if (d.nationalScore && !d.national) {
           const ns = d.nationalScore;
           d.national = {
@@ -140,8 +142,61 @@ export default function ScoringRiesgoPage() {
             politicalEvents: ns.politicalEvents ?? [],
           };
         }
+
+        // Territories: territory → name, components object → array
+        const COMP_LABELS: Record<string, string> = {
+          politicalStability: "Estabilidad política",
+          regulatoryBurden: "Carga regulatoria",
+          fiscalHealth: "Salud fiscal",
+          economicDynamism: "Dinamismo económico",
+          euFundDependency: "Dependencia fondos UE",
+          parliamentaryActivity: "Actividad parlamentaria",
+        };
+        if (Array.isArray(d.territories)) {
+          d.territories = d.territories.map((t: any) => ({
+            ...t,
+            name: t.name ?? t.territory ?? t.slug,
+            components: Array.isArray(t.components)
+              ? t.components
+              : Object.entries(t.components ?? {}).map(([key, val]: [string, any]) => ({
+                  label: COMP_LABELS[key] ?? key,
+                  score: val,
+                })),
+          }));
+        }
+
+        // Sectors: sector → name
+        if (Array.isArray(d.sectors)) {
+          d.sectors = d.sectors.map((s: any) => ({
+            ...s,
+            name: s.name ?? s.sector,
+          }));
+        }
+
+        // Alerts: affectedTerritories → territories, affectedSectors → sectors
+        if (Array.isArray(d.alerts)) {
+          d.alerts = d.alerts.map((a: any) => ({
+            ...a,
+            territories: a.territories ?? a.affectedTerritories ?? [],
+            sectors: a.sectors ?? a.affectedSectors ?? [],
+          }));
+        }
+
+        // Compute stats if missing
+        if (!d.stats) {
+          const tArr: any[] = d.territories ?? [];
+          const sArr: any[] = d.sectors ?? [];
+          const aArr: any[] = d.alerts ?? [];
+          d.stats = {
+            nationalScore: d.national?.overallScore ?? 0,
+            highRiskTerritories: tArr.filter((t: any) => t.overallScore >= 50).length,
+            highPressureSectors: sArr.filter((s: any) => s.overallScore >= 50).length,
+            activeAlerts: aArr.length,
+          };
+        }
+
         setData(d as SRData);
-        try { sessionStorage.setItem("sr-data-v2", JSON.stringify(d)); } catch {}
+        try { sessionStorage.setItem("sr-data-v3", JSON.stringify(d)); } catch {}
       })
       .catch(() => {})
       .finally(() => setLoading(false));

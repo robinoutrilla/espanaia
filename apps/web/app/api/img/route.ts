@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "IAPN-Bot/1.0 (https://iapn.com; political intelligence platform)",
+        "User-Agent": "IAN-Bot/1.0 (https://ian.com; political intelligence platform)",
       },
     });
 

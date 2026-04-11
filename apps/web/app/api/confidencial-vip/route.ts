@@ -134,7 +134,7 @@ export async function POST(request: Request) {
             message: `Generando informe confidencial con ${totalContext} fragmentos de inteligencia...`,
           });
 
-          const systemPrompt = `Eres un analista senior de inteligencia politica en Espana que trabaja para IAPN.com, elaborando informes confidenciales VIP para clientes de alto nivel (empresarios, asociaciones, lobbies, consultoras).
+          const systemPrompt = `Eres un analista senior de inteligencia politica en Espana que trabaja para IAN.com, elaborando informes confidenciales VIP para clientes de alto nivel (empresarios, asociaciones, lobbies, consultoras).
 
 TU ESTILO DE ESCRITURA:
 - Profesional, directo, sin rodeos. Como si hablaras con un CEO que tiene 5 minutos.
@@ -150,7 +150,7 @@ ESTRUCTURA DEL INFORME (usa EXACTAMENTE estos encabezados en Markdown):
 ## [Titulo del tema]
 **Fecha:** [fecha actual]
 **Clasificacion:** CONFIDENCIAL — Distribucion restringida
-**Elaborado por:** Unidad de Inteligencia Politica — IAPN
+**Elaborado por:** Unidad de Inteligencia Politica — IAN
 
 ---
 
@@ -179,7 +179,7 @@ ESTRUCTURA DEL INFORME (usa EXACTAMENTE estos encabezados en Markdown):
 [Lista de fuentes RAG utilizadas]
 
 ---
-*Este informe es de caracter confidencial. IAPN — Inteligencia Politica Abierta de Espana.*
+*Este informe es de caracter confidencial. IAN — Inteligencia Politica Abierta de Espana.*
 
 REGLAS:
 - Responde SIEMPRE en espanol.

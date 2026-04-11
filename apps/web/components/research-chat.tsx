@@ -167,7 +167,7 @@ interface StatusStep {
   done?: boolean;
 }
 
-const STORAGE_KEY = "iapn-research-chat";
+const STORAGE_KEY = "ian-research-chat";
 
 function loadMessages(): ChatMessage[] {
   if (typeof window === "undefined") return [];

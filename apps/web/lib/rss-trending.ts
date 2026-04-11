@@ -26,6 +26,7 @@ const feeds: FeedSource[] = [
   { id: "elconfidencial", name: "El Confidencial", url: "https://rss.elconfidencial.com/espana/", category: "media" },
   { id: "publico", name: "Público", url: "https://www.publico.es/rss/politica", category: "media" },
   { id: "rtve", name: "RTVE Noticias", url: "https://www.rtve.es/noticias/rss/nacional/", category: "media" },
+  { id: "civio", name: "Civio", url: "https://civio.es/feed/", category: "media" },
   // Institutional
   { id: "boe", name: "BOE", url: "https://www.boe.es/rss/boe.php?s=1", category: "institutional" },
   { id: "congreso", name: "Congreso", url: "https://www.congreso.es/webpub/rss/contenidos-rss.xml", category: "institutional" },
@@ -206,7 +207,7 @@ async function fetchFeed(feed: FeedSource): Promise<TrendingItem[]> {
 
     const res = await fetch(feed.url, {
       signal: controller.signal,
-      headers: { "User-Agent": "IAPN-Bot/1.0 (political-intelligence)" },
+      headers: { "User-Agent": "IAN-Bot/1.0 (political-intelligence)" },
       next: { revalidate: 300 },
     });
     clearTimeout(timeout);

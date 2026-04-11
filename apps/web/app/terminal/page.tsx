@@ -210,7 +210,7 @@ export default function TerminalPage() {
       {/* ── Terminal header bar ── */}
       <div className="terminal-topbar">
         <div className="terminal-topbar-left">
-          <span className="terminal-brand">IAPÑ <strong>TERMINAL</strong></span>
+          <span className="terminal-brand">IAÑ <strong>TERMINAL</strong></span>
           <span className="terminal-badge">v2</span>
         </div>
         <div className="terminal-topbar-center">
@@ -999,7 +999,7 @@ export default function TerminalPage() {
                   <Link href="/finanzas">💰 Finanzas</Link>
                   <Link href="/votaciones">🗳 Votaciones</Link>
                   <Link href="/europa">🇪🇺 España-UE</Link>
-                  <Link href="/partido-iapn">🤖 Partido IAPÑ</Link>
+                  <Link href="/partido-ian">🤖 Partido IAÑ</Link>
                   <Link href="/predicciones">📈 Predicciones</Link>
                 </div>
               </div>

@@ -36,13 +36,17 @@ interface RRAlert {
 }
 
 interface RRSector {
-  slug: string;
-  name: string;
+  slug?: string;
+  id?: string;
+  name?: string;
+  label?: string;
   description: string;
   activeAlerts: number;
   criticalAlerts: number;
-  regulatoryBurden: number;
-  trend: string;
+  regulatoryBurden?: number;
+  regulatoryBurdenScore?: number;
+  trend?: string;
+  recentTrend?: string;
   keyRegulators: string[];
   topRisks: string[];
   velocityIndex?: number;
@@ -234,7 +238,7 @@ export default function RadarRegulatorioPage() {
       ...filtered.map((a) => `- [${a.impactLevel.toUpperCase()}] ${a.title}${a.complianceDeadline ? ` (deadline: ${a.complianceDeadline})` : ""}`),
       "",
       "SECTORES:",
-      ...sectors.map((s) => `- ${s.name}: carga ${s.regulatoryBurden}/100, ${s.activeAlerts} alertas${s.velocityIndex ? `, velocidad ${s.velocityIndex}/10` : ""}`),
+      ...sectors.map((s) => `- ${s.name ?? s.label}: carga ${s.regulatoryBurden ?? s.regulatoryBurdenScore}/100, ${s.activeAlerts} alertas${s.velocityIndex ? `, velocidad ${s.velocityIndex}/10` : ""}`),
     ];
     const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -249,9 +253,9 @@ export default function RadarRegulatorioPage() {
   const heatmapData = useMemo(() => {
     const impactLevels = ["critico", "alto", "medio", "bajo"];
     return sectors.map((s) => ({
-      sector: s.name,
-      slug: s.slug,
-      counts: impactLevels.map((lvl) => alerts.filter((a) => a.sectors.includes(s.slug) && a.impactLevel === lvl).length),
+      sector: s.name ?? s.label,
+      slug: s.slug ?? s.id,
+      counts: impactLevels.map((lvl) => alerts.filter((a) => a.sectors.includes((s.slug ?? s.id) as string) && a.impactLevel === lvl).length),
     }));
   }, [sectors, alerts]);
 
@@ -476,10 +480,15 @@ export default function RadarRegulatorioPage() {
             <section className="rr-section">
               <SectionHeading eyebrow="Sectores regulados" title="Perfil regulatorio por sector" description="Carga normativa, velocidad regulatoria, fragmentación y alertas activas." />
               <div className="rr-grid">
-                {sectors.map((s) => (
-                  <div key={s.slug} className="rr-card">
+                {sectors.map((s) => {
+                  const sSlug = s.slug ?? s.id ?? "";
+                  const sName = s.name ?? s.label ?? "";
+                  const burden = s.regulatoryBurden ?? s.regulatoryBurdenScore ?? 0;
+                  const sTrend = s.trend ?? s.recentTrend ?? "";
+                  return (
+                  <div key={sSlug} className="rr-card">
                     <div className="rr-card-header-row">
-                      <h3 className="rr-card-title">{s.name}</h3>
+                      <h3 className="rr-card-title">{sName}</h3>
                       {/* #15 Sandbox badge */}
                       {s.sandboxActive && <span className="rr-sandbox-badge">Sandbox activo</span>}
                     </div>
@@ -487,7 +496,7 @@ export default function RadarRegulatorioPage() {
                     <div className="rr-card-meta">
                       <span className="rr-badge">{s.activeAlerts} alertas</span>
                       <span className="rr-badge" style={{ color: "var(--rojo)" }}>{s.criticalAlerts} críticas</span>
-                      <span className="rr-badge">{s.trend}</span>
+                      <span className="rr-badge">{sTrend}</span>
                     </div>
                     {/* #2 Velocity index with sparkline */}
                     {s.velocityIndex != null && (
@@ -503,9 +512,9 @@ export default function RadarRegulatorioPage() {
                     )}
                     {/* Burden bar */}
                     <div className="rr-burden-bar">
-                      <div className="rr-burden-fill" style={{ width: `${s.regulatoryBurden}%`, background: s.regulatoryBurden > 70 ? "var(--rojo)" : s.regulatoryBurden > 40 ? "var(--oro)" : "var(--verde)" }} />
+                      <div className="rr-burden-fill" style={{ width: `${burden}%`, background: burden > 70 ? "var(--rojo)" : burden > 40 ? "var(--oro)" : "var(--verde)" }} />
                     </div>
-                    <span className="rr-burden-label">Carga regulatoria: {s.regulatoryBurden}/100</span>
+                    <span className="rr-burden-label">Carga regulatoria: {burden}/100</span>
                     {/* #12 Fragmentation index */}
                     {s.fragmentationIndex != null && (
                       <div className="rr-frag-row">
@@ -529,7 +538,7 @@ export default function RadarRegulatorioPage() {
                     <div className="rr-card-tags">{s.keyRegulators.map((r) => <span key={r} className="rr-tag">{r}</span>)}</div>
                     <ul className="rr-changes">{s.topRisks.map((r, i) => <li key={i}>{r}</li>)}</ul>
                   </div>
-                ))}
+                  ); })}
               </div>
             </section>
           )}
