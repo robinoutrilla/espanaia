@@ -931,10 +931,10 @@ export function runAgent(agentId: AgentId, question: string): RAGResult {
 }
 
 /** Combine agent results into final context string */
-export function buildContext(agents: RAGResult[]): string {
+export function buildContext(agents: RAGResult[], maxChunks = 25): string {
   return agents
     .flatMap(a => a.context)
-    .slice(0, 12)
+    .slice(0, maxChunks)
     .join("\n");
 }
 

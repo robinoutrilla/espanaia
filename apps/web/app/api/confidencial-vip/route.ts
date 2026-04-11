@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    /api/confidencial-vip — Generates VIP political intelligence reports
-   Password-protected. Uses all RAG agents + Gemini for deep analysis.
+   Password-protected. Uses all RAG agents + Google News + Gemini.
    Returns SSE stream with progress + final report.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -17,6 +17,37 @@ const VALID_PASSWORDS = ["647510884", "650384410"];
 
 // All agents for comprehensive reports
 const ALL_AGENTS: AgentId[] = ["normativo", "presupuestario", "politico-social", "empresarial", "medios", "ministerios"];
+
+// ── Google News RSS fallback for real-time context ──────────────────────────
+
+async function fetchGoogleNews(query: string, maxItems = 10): Promise<string[]> {
+  try {
+    const encoded = encodeURIComponent(query);
+    const url = `https://news.google.com/rss/search?q=${encoded}+when:7d&hl=es&gl=ES&ceid=ES:es`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    if (!res.ok) return [];
+    const xml = await res.text();
+
+    const items: string[] = [];
+    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    let match: RegExpExecArray | null;
+    while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
+      const block = match[1];
+      const title = block.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.replace(/<!\[CDATA\[|\]\]>/g, "").trim() ?? "";
+      const pubDate = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() ?? "";
+      const source = block.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1]?.replace(/<!\[CDATA\[|\]\]>/g, "").trim() ?? "";
+      if (title) {
+        const dateStr = pubDate ? new Date(pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : "";
+        items.push(`[Google News${source ? " — " + source : ""}${dateStr ? " — " + dateStr : ""}] ${title}`);
+      }
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
@@ -40,13 +71,14 @@ export async function POST(request: Request) {
         };
 
         try {
-          // ── Step 1: Warm all caches ──
+          // ── Step 1: Warm all caches + Google News in parallel ──
           send("status", { step: "warming", message: "Inicializando fuentes de datos..." });
 
-          await Promise.all([
+          const [, , , newsItems] = await Promise.all([
             getTrending(50).catch(() => {}),
             getIneIndicators().catch(() => {}),
             getEurostatSnapshot().catch(() => {}),
+            fetchGoogleNews(q + " España"),
           ]);
 
           // ── Step 2: Route and optionally add ALL agents for comprehensive coverage ──
@@ -76,6 +108,22 @@ export async function POST(request: Request) {
             });
           }
 
+          // ── Add Google News context ──
+          if (newsItems && newsItems.length > 0) {
+            agents.push({
+              agentId: "medios",
+              agentName: "Google News (tiempo real)",
+              context: newsItems,
+              sources: ["Google News RSS"],
+            });
+            send("status", {
+              step: "agent-done",
+              message: `Google News: ${newsItems.length} titulares recientes`,
+              agent: "medios",
+              chunks: newsItems.length,
+            });
+          }
+
           const combinedContext = buildContext(agents);
           const totalContext = agents.reduce((s, a) => s + a.context.length, 0);
           const allSources = [...new Set(agents.flatMap(a => a.sources))];
@@ -92,7 +140,8 @@ TU ESTILO DE ESCRITURA:
 - Profesional, directo, sin rodeos. Como si hablaras con un CEO que tiene 5 minutos.
 - Usa lenguaje de "trastienda politica": "entre bambalinas", "fuentes cercanas a...", "en circulos del poder se comenta...", "la lectura interna es..."
 - Anticipa escenarios futuros con probabilidades: "con alta probabilidad", "escenario mas probable", "no se descarta que..."
-- Incluye datos concretos del contexto RAG para respaldar cada afirmacion.
+- Incluye datos concretos del contexto RAG y titulares de prensa para respaldar cada afirmacion.
+- Si el contexto RAG interno es limitado, utiliza los titulares de Google News y tu conocimiento general sobre politica española para elaborar un informe completo y riguroso.
 - Separa HECHOS de ANALISIS y de ANTICIPACION claramente.
 
 ESTRUCTURA DEL INFORME (usa EXACTAMENTE estos encabezados en Markdown):
@@ -140,9 +189,10 @@ REGLAS:
 - Usa formato Markdown.
 - NO uses emojis.`;
 
-          const userPrompt = combinedContext
-            ? `CONTEXTO DE INTELIGENCIA (${totalContext} fragmentos de ${agents.length} agentes RAG):\n${combinedContext}\n\nTEMA DEL INFORME VIP: ${q}`
-            : `TEMA DEL INFORME VIP: ${q}\n\n(Contexto RAG limitado — elabora con conocimiento general de politica espanola.)`;
+          const userPrompt = `CONTEXTO DE INTELIGENCIA (${totalContext} fragmentos de ${agents.length} agentes RAG + prensa):
+${combinedContext || "(Contexto RAG interno limitado para este tema — utiliza titulares de prensa y conocimiento general de politica española.)"}
+
+TEMA DEL INFORME VIP: ${q}`;
 
           if (!GEMINI_API_KEY) {
             send("done", {
