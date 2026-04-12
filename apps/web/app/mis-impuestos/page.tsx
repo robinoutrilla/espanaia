@@ -1,6 +1,8 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SiteHeader } from "../../components/site-header";
+import { lookupPostalCode } from "../../lib/postal-codes";
+import { getCcaaInitiatives, getMunicipalInitiatives, type FiscalInitiative } from "../../lib/fiscal-initiatives";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    /mis-impuestos — "¿En qué se gasta tu dinero?"
@@ -517,6 +519,25 @@ export default function MisImpuestosPage() {
   const [income, setIncome] = useState("");
   const [ccaa, setCcaa] = useState("madrid");
   const [submitted, setSubmitted] = useState(false);
+  const [postalCode, setPostalCode] = useState("");
+  const [municipality, setMunicipality] = useState("");
+  const [province, setProvince] = useState("");
+
+  // Auto-detect CCAA from postal code
+  useEffect(() => {
+    if (postalCode.replace(/\s/g, "").length === 5) {
+      const lookup = lookupPostalCode(postalCode);
+      if (lookup) {
+        setCcaa(lookup.ccaaSlug);
+        setMunicipality(lookup.municipality);
+        setProvince(lookup.province);
+        setSubmitted(false);
+      }
+    }
+  }, [postalCode]);
+
+  const ccaaInitiatives = useMemo(() => getCcaaInitiatives(ccaa), [ccaa]);
+  const municipalInitiatives = useMemo(() => getMunicipalInitiatives(municipality), [municipality]);
 
   const tax = useMemo(() => {
     const val = parseFloat(income.replace(/\./g, "").replace(",", "."));
@@ -636,14 +657,53 @@ export default function MisImpuestosPage() {
                 </div>
               </div>
 
+              {/* Postal code input */}
+              <div style={{ flex: "0 0 140px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "4px", color: "var(--ink-soft)" }}>
+                  Código postal
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={5}
+                  value={postalCode}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                    setPostalCode(v);
+                  }}
+                  placeholder="28001"
+                  style={{
+                    width: "100%", padding: "12px 16px",
+                    fontSize: "1.1rem", fontWeight: 700, fontVariantNumeric: "tabular-nums",
+                    borderRadius: "8px",
+                    border: `2px solid ${postalCode.length === 5 && !lookupPostalCode(postalCode) ? "var(--rojo)" : "var(--border)"}`,
+                    background: "var(--bg)", color: "var(--ink)",
+                    outline: "none", transition: "border-color 200ms",
+                    letterSpacing: "2px", textAlign: "center",
+                  }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = "var(--azul)"}
+                  onBlur={(e) => e.currentTarget.style.borderColor = postalCode.length === 5 && !lookupPostalCode(postalCode) ? "var(--rojo)" : "var(--border)"}
+                />
+                {postalCode.length === 5 && lookupPostalCode(postalCode) && (
+                  <span style={{ fontSize: "0.7rem", color: "var(--verde)", marginTop: 2, display: "block" }}>
+                    {province}
+                  </span>
+                )}
+                {postalCode.length === 5 && !lookupPostalCode(postalCode) && (
+                  <span style={{ fontSize: "0.7rem", color: "var(--rojo)", marginTop: 2, display: "block" }}>
+                    CP no válido
+                  </span>
+                )}
+              </div>
+
               {/* CCAA selector */}
-              <div style={{ flex: "1 1 280px" }}>
+              <div style={{ flex: "1 1 200px" }}>
                 <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: "4px", color: "var(--ink-soft)" }}>
                   Comunidad Autónoma
                 </label>
                 <select
                   value={ccaa}
-                  onChange={(e) => { setCcaa(e.target.value); setSubmitted(false); }}
+                  onChange={(e) => { setCcaa(e.target.value); setMunicipality(""); setProvince(""); setPostalCode(""); setSubmitted(false); }}
                   style={{
                     width: "100%", padding: "12px 16px",
                     fontSize: "0.95rem", fontWeight: 600,
@@ -944,6 +1004,63 @@ export default function MisImpuestosPage() {
             </div>
           </section>
 
+          {/* ── Fiscal Initiatives Section ── */}
+          {(ccaaInitiatives.length > 0 || municipalInitiatives.length > 0) && (
+            <section className="panel section-panel" style={{ animation: "fadeIn 800ms ease", maxWidth: 900, margin: "0 auto var(--space-xl)" }}>
+              <div style={{ textAlign: "center", marginBottom: "var(--space-lg)" }}>
+                <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--azul)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  Iniciativas fiscales en tu zona
+                </span>
+                <h2 style={{ fontSize: "1.15rem", marginTop: 4 }}>
+                  {CCAA_DATA[ccaa as CcaaId]?.name ?? ccaa}
+                  {municipality ? ` / ${municipality}` : ""}
+                </h2>
+                <p style={{ fontSize: "0.8rem", color: "var(--ink-soft)", maxWidth: 550, margin: "4px auto 0" }}>
+                  Deducciones y bonificaciones que podrían aplicarse a tu declaración según tu comunidad autónoma y municipio.
+                </p>
+              </div>
+
+              {/* CCAA Deductions */}
+              {ccaaInitiatives.length > 0 && (
+                <div style={{ marginBottom: "var(--space-lg)" }}>
+                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Deducciones autonómicas IRPF
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                    {ccaaInitiatives.map((ini) => (
+                      <InitiativeCard key={ini.id} initiative={ini} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Municipal Bonifications */}
+              {municipalInitiatives.length > 0 && (
+                <div style={{ marginBottom: "var(--space-md)" }}>
+                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    Bonificaciones municipales — {municipality}
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                    {municipalInitiatives.map((ini) => (
+                      <InitiativeCard key={ini.id} initiative={ini} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {municipality && municipalInitiatives.length === 0 && (
+                <p style={{ fontSize: "0.8rem", color: "var(--ink-muted)", textAlign: "center", padding: "var(--space-md) 0" }}>
+                  No tenemos datos de bonificaciones específicas para {municipality}.
+                  Consulta la web de tu ayuntamiento para conocer las bonificaciones locales.
+                </p>
+              )}
+
+              <p style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textAlign: "center", marginTop: "var(--space-sm)" }}>
+                {"ⓘ"} Datos orientativos basados en normativa 2024-2025. Consulta la agencia tributaria de tu CCAA y tu ayuntamiento para confirmar requisitos y importes.
+              </p>
+            </section>
+          )}
+
           {/* Methodology */}
           <section className="panel section-panel" style={{ animation: "fadeIn 1000ms ease", maxWidth: 800, margin: "0 auto var(--space-xl)" }}>
             <details style={{ cursor: "pointer" }}>
@@ -1141,6 +1258,57 @@ function ContextCard({ icon, label, value, sub }: { icon: string; label: string;
         {value}
       </div>
       <div style={{ fontSize: "0.72rem", color: "var(--ink-soft)" }}>{sub}</div>
+    </div>
+  );
+}
+
+const INITIATIVE_COLORS: Record<string, { bg: string; fg: string }> = {
+  "deduccion-irpf": { bg: "rgba(0,82,204,0.08)", fg: "var(--azul)" },
+  "bonificacion-ibi": { bg: "rgba(0,155,58,0.08)", fg: "var(--verde)" },
+  "subvencion": { bg: "rgba(230,126,34,0.08)", fg: "#e67e22" },
+  "exencion": { bg: "rgba(142,68,173,0.08)", fg: "#8e44ad" },
+  "programa": { bg: "rgba(41,128,185,0.08)", fg: "#2980b9" },
+};
+
+const INITIATIVE_LABELS: Record<string, string> = {
+  "deduccion-irpf": "Deducción IRPF",
+  "bonificacion-ibi": "Bonificación IBI",
+  "subvencion": "Subvención",
+  "exencion": "Exención",
+  "programa": "Programa",
+};
+
+function InitiativeCard({ initiative: ini }: { initiative: FiscalInitiative }) {
+  const color = INITIATIVE_COLORS[ini.type] ?? { bg: "var(--surface)", fg: "var(--ink)" };
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: "10px",
+      background: "var(--surface-raised, var(--surface))",
+      border: "1px solid var(--border)",
+      borderLeft: `4px solid ${color.fg}`,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span style={{ fontSize: "1.1rem" }}>{ini.icon}</span>
+        <span style={{
+          fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase",
+          padding: "2px 8px", borderRadius: "4px",
+          background: color.bg, color: color.fg,
+        }}>
+          {INITIATIVE_LABELS[ini.type] ?? ini.type}
+        </span>
+      </div>
+      <strong style={{ fontSize: "0.85rem", display: "block", marginBottom: 4 }}>{ini.title}</strong>
+      <p style={{ fontSize: "0.76rem", color: "var(--ink-soft)", lineHeight: 1.5, margin: "0 0 6px" }}>
+        {ini.description}
+      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontSize: "0.9rem", fontWeight: 800, color: color.fg }}>
+          {ini.amount}
+        </span>
+      </div>
+      <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", marginTop: 4, lineHeight: 1.4 }}>
+        {ini.requirements}
+      </div>
     </div>
   );
 }
