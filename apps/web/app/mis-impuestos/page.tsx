@@ -640,6 +640,36 @@ export default function MisImpuestosPage() {
   const ccaaInitiatives = useMemo(() => getCcaaInitiatives(ccaa), [ccaa]);
   const municipalInitiatives = useMemo(() => getMunicipalInitiatives(municipality), [municipality]);
 
+  // Estimate savings from each initiative based on amount string
+  const estimateSaving = (amount: string, taxResult: TaxResult | null): number => {
+    if (!taxResult) return 0;
+    const s = amount.replace(/\./g, "").replace(/,/g, ".");
+    // "30 %, hasta 6.000 €" → use the cap
+    const capMatch = s.match(/hasta\s+([\d.]+)\s*€/i);
+    // "15 %" or "20 %, hasta X"
+    const pctMatch = s.match(/([\d.]+)\s*%/);
+    // "1.500 €" or "300 € por hijo" or "582-910 €"
+    const fixedMatch = s.match(/([\d.]+)\s*€/);
+    const rangeMatch = s.match(/([\d.]+)-([\d.]+)\s*€/);
+
+    if (capMatch && pctMatch) {
+      const pct = parseFloat(pctMatch[1]) / 100;
+      const cap = parseFloat(capMatch[1]);
+      return Math.min(taxResult.cuotaAutonomica * pct, cap);
+    }
+    if (pctMatch && !capMatch) {
+      const pct = parseFloat(pctMatch[1]) / 100;
+      return Math.min(taxResult.cuotaAutonomica * pct, taxResult.cuotaAutonomica * 0.3);
+    }
+    if (rangeMatch) {
+      return (parseFloat(rangeMatch[1]) + parseFloat(rangeMatch[2])) / 2;
+    }
+    if (fixedMatch) {
+      return parseFloat(fixedMatch[1]);
+    }
+    return 0;
+  };
+
   // Map ccaaSlug to territory slug used in contracts (handle valencia → comunitat-valenciana)
   const territorySlug = useMemo(() => {
     const SLUG_MAP: Record<string, string> = { valencia: "comunitat-valenciana" };
@@ -653,6 +683,20 @@ export default function MisImpuestosPage() {
     if (!val || val <= 0 || !submitted) return null;
     return calculateIRPF(val, ccaa);
   }, [income, ccaa, submitted]);
+
+  const ccaaSavings = useMemo(() => {
+    if (!tax) return { items: [] as { id: string; saving: number }[], total: 0 };
+    const items = ccaaInitiatives.map((ini) => ({ id: ini.id, saving: estimateSaving(ini.amount, tax) }));
+    return { items, total: items.reduce((s, i) => s + i.saving, 0) };
+  }, [ccaaInitiatives, tax]);
+
+  const municipalSavings = useMemo(() => {
+    if (!tax) return { items: [] as { id: string; saving: number }[], total: 0 };
+    const items = municipalInitiatives.map((ini) => ({ id: ini.id, saving: estimateSaving(ini.amount, tax) }));
+    return { items, total: items.reduce((s, i) => s + i.saving, 0) };
+  }, [municipalInitiatives, tax]);
+
+  const totalSavings = ccaaSavings.total + municipalSavings.total;
 
   const spending = useMemo(() => {
     if (!tax) return [];
@@ -1129,16 +1173,75 @@ export default function MisImpuestosPage() {
                 </p>
               </div>
 
+              {/* Total Savings Summary */}
+              {tax && totalSavings > 0 && (
+                <div style={{
+                  display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center",
+                  marginBottom: "var(--space-lg)", padding: "16px 20px",
+                  borderRadius: "12px", background: "linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%)",
+                  border: "1px solid #bbf7d0",
+                }}>
+                  <div style={{ textAlign: "center", minWidth: 140 }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 2 }}>
+                      Ahorro total estimado
+                    </div>
+                    <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#15803d" }}>
+                      {totalSavings.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+                    </div>
+                    <div style={{ fontSize: "0.7rem", color: "#166534" }}>
+                      si aplicas todas las deducciones
+                    </div>
+                  </div>
+                  {ccaaSavings.total > 0 && municipalSavings.total > 0 && (
+                    <>
+                      <div style={{ width: 1, background: "#bbf7d0", alignSelf: "stretch" }} />
+                      <div style={{ textAlign: "center", minWidth: 120 }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "#2563eb", textTransform: "uppercase", marginBottom: 2 }}>CCAA</div>
+                        <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#2563eb" }}>
+                          {ccaaSavings.total.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+                        </div>
+                      </div>
+                      <div style={{ width: 1, background: "#bbf7d0", alignSelf: "stretch" }} />
+                      <div style={{ textAlign: "center", minWidth: 120 }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "#b45309", textTransform: "uppercase", marginBottom: 2 }}>Municipal</div>
+                        <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#b45309" }}>
+                          {municipalSavings.total.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {tax.cuotaTotal > 0 && (
+                    <>
+                      <div style={{ width: 1, background: "#bbf7d0", alignSelf: "stretch" }} />
+                      <div style={{ textAlign: "center", minWidth: 120 }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "#15803d", textTransform: "uppercase", marginBottom: 2 }}>% sobre tu IRPF</div>
+                        <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#15803d" }}>
+                          {((totalSavings / tax.cuotaTotal) * 100).toFixed(1)} {"%"}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* CCAA Deductions */}
               {ccaaInitiatives.length > 0 && (
                 <div style={{ marginBottom: "var(--space-lg)" }}>
-                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    Deducciones autonómicas IRPF
-                  </h3>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-sm)" }}>
+                    <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0 }}>
+                      Deducciones autonómicas IRPF
+                    </h3>
+                    {tax && ccaaSavings.total > 0 && (
+                      <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#2563eb" }}>
+                        {"≈ "}{ccaaSavings.total.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-                    {ccaaInitiatives.map((ini) => (
-                      <InitiativeCard key={ini.id} initiative={ini} />
-                    ))}
+                    {ccaaInitiatives.map((ini) => {
+                      const saving = ccaaSavings.items.find((i) => i.id === ini.id)?.saving ?? 0;
+                      return <InitiativeCard key={ini.id} initiative={ini} estimatedSaving={tax ? saving : undefined} />;
+                    })}
                   </div>
                 </div>
               )}
@@ -1146,13 +1249,21 @@ export default function MisImpuestosPage() {
               {/* Municipal Bonifications */}
               {municipalInitiatives.length > 0 && (
                 <div style={{ marginBottom: "var(--space-md)" }}>
-                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    Bonificaciones municipales — {municipality}
-                  </h3>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-sm)" }}>
+                    <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0 }}>
+                      Bonificaciones municipales — {municipality}
+                    </h3>
+                    {tax && municipalSavings.total > 0 && (
+                      <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#b45309" }}>
+                        {"≈ "}{municipalSavings.total.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
-                    {municipalInitiatives.map((ini) => (
-                      <InitiativeCard key={ini.id} initiative={ini} />
-                    ))}
+                    {municipalInitiatives.map((ini) => {
+                      const saving = municipalSavings.items.find((i) => i.id === ini.id)?.saving ?? 0;
+                      return <InitiativeCard key={ini.id} initiative={ini} estimatedSaving={tax ? saving : undefined} />;
+                    })}
                   </div>
                 </div>
               )}
@@ -1437,7 +1548,7 @@ const INITIATIVE_LABELS: Record<string, string> = {
   "programa": "Programa",
 };
 
-function InitiativeCard({ initiative: ini }: { initiative: FiscalInitiative }) {
+function InitiativeCard({ initiative: ini, estimatedSaving }: { initiative: FiscalInitiative; estimatedSaving?: number }) {
   const color = INITIATIVE_COLORS[ini.type] ?? { bg: "var(--surface)", fg: "var(--ink)" };
   return (
     <div style={{
@@ -1464,6 +1575,15 @@ function InitiativeCard({ initiative: ini }: { initiative: FiscalInitiative }) {
         <span style={{ fontSize: "0.9rem", fontWeight: 800, color: color.fg }}>
           {ini.amount}
         </span>
+        {estimatedSaving !== undefined && estimatedSaving > 0 && (
+          <span style={{
+            fontSize: "0.72rem", fontWeight: 700, color: "#15803d",
+            padding: "2px 8px", borderRadius: "4px",
+            background: "#dcfce7",
+          }}>
+            {"≈ "}{estimatedSaving.toLocaleString("es-ES", { maximumFractionDigits: 0 })} {"€"}
+          </span>
+        )}
       </div>
       <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", marginTop: 4, lineHeight: 1.4 }}>
         {ini.requirements}
