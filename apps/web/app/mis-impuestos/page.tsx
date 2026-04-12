@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { SiteHeader } from "../../components/site-header";
 import { lookupPostalCode } from "../../lib/postal-codes";
 import { getCcaaInitiatives, getMunicipalInitiatives, type FiscalInitiative } from "../../lib/fiscal-initiatives";
+import { getContractsForTerritory, getSubsidiesForTerritory, contractTypeLabels, contractTypeColors, contractStatusLabels, type PublicContract, type PublicSubsidy } from "../../lib/contracts-data";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    /mis-impuestos — "¿En qué se gasta tu dinero?"
@@ -639,6 +640,14 @@ export default function MisImpuestosPage() {
   const ccaaInitiatives = useMemo(() => getCcaaInitiatives(ccaa), [ccaa]);
   const municipalInitiatives = useMemo(() => getMunicipalInitiatives(municipality), [municipality]);
 
+  // Map ccaaSlug to territory slug used in contracts (handle valencia → comunitat-valenciana)
+  const territorySlug = useMemo(() => {
+    const SLUG_MAP: Record<string, string> = { valencia: "comunitat-valenciana" };
+    return SLUG_MAP[ccaa] ?? ccaa;
+  }, [ccaa]);
+  const localContracts = useMemo(() => getContractsForTerritory(territorySlug), [territorySlug]);
+  const localSubsidies = useMemo(() => getSubsidiesForTerritory(territorySlug), [territorySlug]);
+
   const tax = useMemo(() => {
     const val = parseFloat(income.replace(/\./g, "").replace(",", "."));
     if (!val || val <= 0 || !submitted) return null;
@@ -1161,6 +1170,56 @@ export default function MisImpuestosPage() {
             </section>
           )}
 
+          {/* ── Public Contracts & Subsidies by territory ── */}
+          {postalCode.length === 5 && lookupPostalCode(postalCode) && (localContracts.length > 0 || localSubsidies.length > 0) && (
+            <section className="panel section-panel" style={{ animation: "fadeIn 800ms ease", maxWidth: 900, margin: "0 auto var(--space-xl)" }}>
+              <div style={{ textAlign: "center", marginBottom: "var(--space-lg)" }}>
+                <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--rojo)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                  {"📍"} Contratos y subvenciones en tu zona
+                </span>
+                <h2 style={{ fontSize: "1.15rem", marginTop: 4 }}>
+                  {CCAA_DATA[ccaa as CcaaId]?.name ?? ccaa}
+                  {municipality ? ` / ${municipality}` : ""}
+                </h2>
+                <p style={{ fontSize: "0.8rem", color: "var(--ink-soft)", maxWidth: 600, margin: "4px auto 0" }}>
+                  Proyectos de infraestructura y programas de inversión pública que afectan a tu territorio. Así se gasta tu dinero.
+                </p>
+              </div>
+
+              {/* Contracts */}
+              {localContracts.length > 0 && (
+                <div style={{ marginBottom: "var(--space-lg)" }}>
+                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    {"🏗️"} Contratos públicos ({localContracts.length})
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+                    {localContracts.map((c) => (
+                      <ContractCard key={c.id} contract={c} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subsidies */}
+              {localSubsidies.length > 0 && (
+                <div style={{ marginBottom: "var(--space-md)" }}>
+                  <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink)", marginBottom: "var(--space-sm)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    {"💰"} Subvenciones e inversiones ({localSubsidies.length})
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+                    {localSubsidies.map((s) => (
+                      <SubsidyCard key={s.id} subsidy={s} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p style={{ fontSize: "0.7rem", color: "var(--ink-muted)", textAlign: "center", marginTop: "var(--space-sm)" }}>
+                {"ⓘ"} Datos basados en la Plataforma de Contratación del Sector Público y el BOE. Importes en millones de euros.
+              </p>
+            </section>
+          )}
+
           {/* Methodology */}
           <section className="panel section-panel" style={{ animation: "fadeIn 1000ms ease", maxWidth: 800, margin: "0 auto var(--space-xl)" }}>
             <details style={{ cursor: "pointer" }}>
@@ -1409,6 +1468,121 @@ function InitiativeCard({ initiative: ini }: { initiative: FiscalInitiative }) {
       <div style={{ fontSize: "0.7rem", color: "var(--ink-muted)", marginTop: 4, lineHeight: 1.4 }}>
         {ini.requirements}
       </div>
+    </div>
+  );
+}
+
+const CONTRACT_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
+  adjudicado: { bg: "#dcfce7", fg: "#15803d" },
+  "en-licitacion": { bg: "#fef3c7", fg: "#b45309" },
+  desierto: { bg: "#fee2e2", fg: "#dc2626" },
+  resuelto: { bg: "#e0e7ff", fg: "#4338ca" },
+};
+
+function ContractCard({ contract: c }: { contract: PublicContract }) {
+  const statusColor = CONTRACT_STATUS_COLORS[c.status] ?? { bg: "var(--surface)", fg: "var(--ink)" };
+  const typeColor = contractTypeColors[c.contractType] ?? "#666";
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: "10px",
+      background: "var(--surface-raised, var(--surface))",
+      border: "1px solid var(--border)",
+      borderLeft: `4px solid ${typeColor}`,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 6 }}>
+        <span style={{
+          fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
+          padding: "2px 7px", borderRadius: "4px",
+          background: `${typeColor}18`, color: typeColor,
+        }}>
+          {contractTypeLabels[c.contractType]}
+        </span>
+        <span style={{
+          fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
+          padding: "2px 7px", borderRadius: "4px",
+          background: statusColor.bg, color: statusColor.fg,
+        }}>
+          {contractStatusLabels[c.status]}
+        </span>
+      </div>
+      <strong style={{ fontSize: "0.82rem", display: "block", marginBottom: 4, lineHeight: 1.3 }}>{c.title}</strong>
+      <p style={{ fontSize: "0.74rem", color: "var(--ink-soft)", lineHeight: 1.45, margin: "0 0 8px" }}>
+        {c.summary}
+      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontSize: "0.95rem", fontWeight: 800, color: typeColor }}>
+          {c.amountM >= 1000 ? `${(c.amountM / 1000).toFixed(1).replace(".0", "")}B€` : `${c.amountM.toLocaleString("es-ES")}M€`}
+        </span>
+        {c.duration && (
+          <span style={{ fontSize: "0.68rem", color: "var(--ink-muted)" }}>{c.duration}</span>
+        )}
+      </div>
+      <div style={{ fontSize: "0.68rem", color: "var(--ink-muted)", marginTop: 6, lineHeight: 1.4 }}>
+        <span style={{ fontWeight: 600 }}>{c.entity}</span>
+        {c.contractor && <> {"→"} {c.contractor}</>}
+      </div>
+      {c.tags.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+          {c.tags.slice(0, 4).map((t) => (
+            <span key={t} style={{ fontSize: "0.58rem", padding: "1px 6px", borderRadius: "3px", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--ink-muted)" }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const SUBSIDY_STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
+  concedida: { bg: "#dcfce7", fg: "#15803d" },
+  "en-tramite": { bg: "#fef3c7", fg: "#b45309" },
+  justificada: { bg: "#e0e7ff", fg: "#4338ca" },
+};
+
+function SubsidyCard({ subsidy: s }: { subsidy: PublicSubsidy }) {
+  const statusColor = SUBSIDY_STATUS_COLORS[s.status] ?? { bg: "var(--surface)", fg: "var(--ink)" };
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: "10px",
+      background: "var(--surface-raised, var(--surface))",
+      border: "1px solid var(--border)",
+      borderLeft: "4px solid #2563eb",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <span style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", padding: "2px 7px", borderRadius: "4px", background: "#eff6ff", color: "#2563eb" }}>
+          Subvención
+        </span>
+        <span style={{
+          fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
+          padding: "2px 7px", borderRadius: "4px",
+          background: statusColor.bg, color: statusColor.fg,
+        }}>
+          {s.status === "concedida" ? "Concedida" : s.status === "en-tramite" ? "En trámite" : "Justificada"}
+        </span>
+      </div>
+      <strong style={{ fontSize: "0.82rem", display: "block", marginBottom: 4, lineHeight: 1.3 }}>{s.title}</strong>
+      <p style={{ fontSize: "0.74rem", color: "var(--ink-soft)", lineHeight: 1.45, margin: "0 0 8px" }}>
+        {s.summary}
+      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+        <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#2563eb" }}>
+          {s.amountM >= 1000 ? `${(s.amountM / 1000).toFixed(1).replace(".0", "")}B€` : `${s.amountM.toLocaleString("es-ES")}M€`}
+        </span>
+        <span style={{ fontSize: "0.68rem", color: "var(--ink-muted)" }}>{s.publicationDate}</span>
+      </div>
+      <div style={{ fontSize: "0.68rem", color: "var(--ink-muted)", marginTop: 6 }}>
+        <span style={{ fontWeight: 600 }}>{s.grantingBody}</span>
+      </div>
+      {s.tags.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+          {s.tags.slice(0, 4).map((t) => (
+            <span key={t} style={{ fontSize: "0.58rem", padding: "1px 6px", borderRadius: "3px", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--ink-muted)" }}>
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
